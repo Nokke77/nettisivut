@@ -1,35 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yhteystiedot | Noel Jeromaa</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="site-header">
-    <a class="logo" href="index.html">Noel Jeromaa</a>
-    <nav class="nav" aria-label="Päävalikko">
-      <a href="index.html">Etusivu</a>
-      <a href="tietoaminusta.html">Tietoa minusta</a>
-      <a href="yhteystiedot.html" aria-current="page">Yhteystiedot</a>
-    </nav>
-  </header>
-
-  <main class="page compact-page">
-    <section class="content-card contact-card">
-      <p class="eyebrow">Ota yhteyttä</p>
-      <h1>Yhteystiedot</h1>
-      <div class="contact-list">
-        <p><span>Nimi</span>Noel Jeromaa</p>
-        <p><span>Sähköposti</span><a href="mailto:noel.jeromaa@gmail.com">noel.jeromaa@gmail.com</a></p>
-        <p><span>Puhelin</span><a href="tel:+358451513869">+358 45 151 3869</a></p>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Noel Jeromaan yhteystiedot.">
+    <meta name="theme-color" content="#07070b">
+    <title>Yhteystiedot | Noel Jeromaa</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="nav-wrap">
+        <a class="brand" href="index.html">Noel Jeromaa</a>
+        <nav class="site-nav" aria-label="Päänavigaatio">
+          <a href="index.html">Etusivu</a>
+          <a href="tietoaminusta.html">Tietoa minusta</a>
+          <a href="yhteystiedot.html" aria-current="page">Yhteystiedot</a>
+        </nav>
       </div>
-    </section>
-  </main>
+    </header>
 
-  <footer class="site-footer">
-    &copy; 2023 Noel Jeromaa | Kaikki oikeudet pidätetään
-  </footer>
-</body>
+    <main>
+      <header class="page-hero">
+        <div class="page-hero-inner">
+          <p class="eyebrow">Noel Jeromaa</p>
+          <h1 class="page-title">Yhteystiedot</h1>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="contact-wrap">
+          <section class="card contact-lead">
+            <div>
+              <p class="eyebrow">Ota yhteyttä</p>
+              <h2>Yhteystiedot:</h2>
+            </div>
+            <p>Voit ottaa yhteyttä sähköpostitse tai puhelimitse.</p>
+          </section>
+
+          <section class="card" aria-label="Yhteystiedot">
+            <dl class="contact-list">
+              <div class="contact-row">
+                <dt>Nimi</dt>
+                <dd>Noel Jeromaa</dd>
+              </div>
+              <div class="contact-row">
+                <dt>Sähköposti</dt>
+                <dd><a href="mailto:noel.jeromaa@gmail.com">noel.jeromaa@gmail.com</a></dd>
+              </div>
+              <div class="contact-row">
+                <dt>Puhelin</dt>
+                <dd><a href="tel:+358451513869">+358 45 151 3869</a></dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>© 2023 Noel Jeromaa</p>
+        <p>Kaikki oikeudet pidätetään</p>
+      </div>
+    </footer>
+  </body>
 </html>
