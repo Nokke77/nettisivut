@@ -154,7 +154,7 @@ a:focus-visible {
   margin: 0;
   font-size: clamp(3.4rem, 11vw, 8.4rem);
   line-height: 0.92;
-  letter-spacing: -0.07em;
+  letter-spacing: 0.01em;
   text-wrap: balance;
   text-shadow: 0 10px 44px rgba(0, 0, 0, 0.55);
 }
@@ -241,7 +241,7 @@ a:focus-visible {
   margin: 0;
   font-size: clamp(2.8rem, 7vw, 5.6rem);
   line-height: 0.98;
-  letter-spacing: -0.055em;
+  letter-spacing: 0.01em;
   text-wrap: balance;
 }
 
