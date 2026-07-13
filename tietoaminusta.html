@@ -223,7 +223,7 @@
           const activePosition = metrics.trackStart + ((metrics.trackEnd - metrics.trackStart) * clampedProgress);
           const trailTop = activePosition - metrics.trackStart;
           const trailHeight = metrics.trackEnd - activePosition;
-          const closestIndex = Math.round(clampedProgress * (spaceDestinations.length - 1));
+          const reachedIndex = Math.ceil((clampedProgress * (spaceDestinations.length - 1)) - Number.EPSILON);
           const rocketTop = activePosition - rocket.offsetHeight;
 
           spaceSlider.style.setProperty("--track-top", `${metrics.trackStart}px`);
@@ -232,11 +232,11 @@
           spaceSlider.style.setProperty("--progress-height", `${Math.max(0, trailHeight)}px`);
           spaceSlider.style.setProperty("--rocket-top", `${rocketTop}px`);
           sliderItems.forEach((item, itemIndex) => {
-            const isActive = itemIndex === closestIndex;
+            const isActive = itemIndex >= reachedIndex;
             item.classList.toggle("is-active", isActive);
             item.setAttribute("aria-pressed", String(isActive));
           });
-          activeIndex = closestIndex;
+          activeIndex = reachedIndex;
         }
 
         function updateFromScroll() {
