@@ -198,11 +198,7 @@
         const rocket = spaceSlider.querySelector(".space-slider__rocket");
 
         function getSliderMetrics() {
-          if (window.matchMedia("(min-width: 761px)").matches) {
-            spaceSlider.style.height = `${aboutContent.offsetHeight}px`;
-          } else {
-            spaceSlider.style.removeProperty("height");
-          }
+          spaceSlider.style.height = `${aboutContent.offsetHeight}px`;
           const sliderBounds = spaceSlider.getBoundingClientRect();
           const markerCenters = sliderItems.map((item) => {
             const markerBounds = item.querySelector(".space-slider__marker").getBoundingClientRect();
