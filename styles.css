@@ -254,7 +254,7 @@ a:focus-visible {
 .about-layout {
   display: grid;
   grid-template-columns: minmax(166px, 210px) minmax(0, 1fr);
-  align-items: start;
+  align-items: stretch;
   gap: clamp(20px, 3vw, 42px);
 }
 
@@ -267,9 +267,9 @@ a:focus-visible {
   --track-bottom: 88px;
   --progress-height: 0px;
   --rocket-position: 0px;
-  position: sticky;
-  top: 100px;
-  height: 600px;
+  position: relative;
+  align-self: stretch;
+  min-height: 100%;
   isolation: isolate;
 }
 
@@ -306,14 +306,23 @@ a:focus-visible {
   height: 164px;
   object-fit: contain;
   filter: drop-shadow(0 9px 13px rgba(0, 0, 0, 0.68)) drop-shadow(0 0 13px rgba(255, 121, 56, 0.42));
-  pointer-events: none;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
   transition: top 560ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.space-slider__rocket.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
 .space-slider__list {
+  position: absolute;
+  inset: 0;
   display: grid;
   grid-template-rows: repeat(4, minmax(0, 1fr));
-  height: 100%;
   margin: 0;
   padding: 158px 0 74px;
 }

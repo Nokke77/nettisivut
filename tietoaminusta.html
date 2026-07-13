@@ -168,9 +168,12 @@
 
       const spaceSlider = document.querySelector("[data-space-slider]");
       const spaceSliderList = document.querySelector("[data-space-slider-list]");
+      const aboutContent = document.querySelector(".about-content");
 
-      if (spaceSlider && spaceSliderList) {
-        let activeIndex = spaceDestinations.length - 1;
+      if (spaceSlider && spaceSliderList && aboutContent) {
+        let activeIndex = 0;
+        let isDragging = false;
+        let animationFrame;
 
         spaceDestinations.forEach((destination, index) => {
           const button = document.createElement("button");
@@ -197,41 +200,102 @@
 
           content.append(label, image);
           button.append(marker, content);
-          button.addEventListener("click", () => setActive(index));
+          button.addEventListener("click", () => scrollToProgress(index / (spaceDestinations.length - 1), "smooth"));
           spaceSliderList.append(button);
         });
 
         const sliderItems = [...spaceSliderList.querySelectorAll(".space-slider__item")];
+        const rocket = spaceSlider.querySelector(".space-slider__rocket");
 
-        function positionSlider() {
+        function getSliderMetrics() {
           const sliderBounds = spaceSlider.getBoundingClientRect();
           const markerCenters = sliderItems.map((item) => {
             const markerBounds = item.querySelector(".space-slider__marker").getBoundingClientRect();
             return markerBounds.top - sliderBounds.top + markerBounds.height / 2;
           });
-          const activePosition = markerCenters[activeIndex];
-          const trackStart = markerCenters[0];
-          const trackEnd = markerCenters[markerCenters.length - 1];
+          const contentBounds = aboutContent.getBoundingClientRect();
+          const contentTop = window.scrollY + contentBounds.top;
+          const scrollStart = Math.max(0, contentTop - 108);
+          const scrollEnd = Math.max(scrollStart + 1, contentTop + aboutContent.offsetHeight - window.innerHeight + 108);
 
-          spaceSlider.style.setProperty("--track-top", `${trackStart}px`);
-          spaceSlider.style.setProperty("--track-bottom", `${Math.max(0, spaceSlider.clientHeight - trackEnd)}px`);
-          spaceSlider.style.setProperty("--progress-height", `${Math.max(0, activePosition - trackStart)}px`);
-          spaceSlider.style.setProperty("--rocket-position", `${activePosition}px`);
+          return {
+            trackStart: markerCenters[0],
+            trackEnd: markerCenters[markerCenters.length - 1],
+            scrollStart,
+            scrollEnd
+          };
         }
 
-        function setActive(index) {
-          activeIndex = index;
+        function setSliderPosition(progress) {
+          const metrics = getSliderMetrics();
+          const clampedProgress = Math.min(1, Math.max(0, progress));
+          const activePosition = metrics.trackStart + ((metrics.trackEnd - metrics.trackStart) * clampedProgress);
+          const closestIndex = Math.round(clampedProgress * (spaceDestinations.length - 1));
+
+          spaceSlider.style.setProperty("--track-top", `${metrics.trackStart}px`);
+          spaceSlider.style.setProperty("--track-bottom", `${Math.max(0, spaceSlider.clientHeight - metrics.trackEnd)}px`);
+          spaceSlider.style.setProperty("--progress-height", `${Math.max(0, activePosition - metrics.trackStart)}px`);
+          spaceSlider.style.setProperty("--rocket-position", `${activePosition}px`);
           sliderItems.forEach((item, itemIndex) => {
-            const isActive = itemIndex === activeIndex;
+            const isActive = itemIndex === closestIndex;
             item.classList.toggle("is-active", isActive);
             item.setAttribute("aria-pressed", String(isActive));
           });
-          positionSlider();
+          activeIndex = closestIndex;
         }
 
-        window.addEventListener("resize", positionSlider);
-        window.addEventListener("load", positionSlider, { once: true });
-        setActive(activeIndex);
+        function updateFromScroll() {
+          const metrics = getSliderMetrics();
+          const progress = (window.scrollY - metrics.scrollStart) / (metrics.scrollEnd - metrics.scrollStart);
+          setSliderPosition(progress);
+        }
+
+        function scrollToProgress(progress, behavior) {
+          const metrics = getSliderMetrics();
+          const target = metrics.scrollStart + ((metrics.scrollEnd - metrics.scrollStart) * progress);
+          window.scrollTo({ top: target, behavior });
+          setSliderPosition(progress);
+        }
+
+        function scrollFromPointer(event) {
+          const sliderBounds = spaceSlider.getBoundingClientRect();
+          const metrics = getSliderMetrics();
+          const position = event.clientY - sliderBounds.top;
+          const progress = (position - metrics.trackStart) / (metrics.trackEnd - metrics.trackStart);
+          scrollToProgress(Math.min(1, Math.max(0, progress)), "auto");
+        }
+
+        rocket.addEventListener("pointerdown", (event) => {
+          isDragging = true;
+          rocket.classList.add("is-dragging");
+          rocket.setPointerCapture(event.pointerId);
+          scrollFromPointer(event);
+        });
+
+        rocket.addEventListener("pointermove", (event) => {
+          if (isDragging) scrollFromPointer(event);
+        });
+
+        rocket.addEventListener("pointerup", (event) => {
+          isDragging = false;
+          rocket.classList.remove("is-dragging");
+          rocket.releasePointerCapture(event.pointerId);
+        });
+
+        spaceSlider.addEventListener("pointerdown", (event) => {
+          if (!event.target.closest(".space-slider__item, .space-slider__rocket")) {
+            scrollFromPointer(event);
+          }
+        });
+
+        window.addEventListener("scroll", () => {
+          window.cancelAnimationFrame(animationFrame);
+          animationFrame = window.requestAnimationFrame(updateFromScroll);
+        }, { passive: true });
+
+        window.addEventListener("resize", updateFromScroll);
+        window.addEventListener("load", updateFromScroll, { once: true });
+        updateFromScroll();
       }
     </script>
   </body>
