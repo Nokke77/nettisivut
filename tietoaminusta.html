@@ -207,6 +207,11 @@
         const rocket = spaceSlider.querySelector(".space-slider__rocket");
 
         function getSliderMetrics() {
+          if (window.matchMedia("(min-width: 761px)").matches) {
+            spaceSlider.style.height = `${aboutContent.offsetHeight}px`;
+          } else {
+            spaceSlider.style.removeProperty("height");
+          }
           const sliderBounds = spaceSlider.getBoundingClientRect();
           const markerCenters = sliderItems.map((item) => {
             const markerBounds = item.querySelector(".space-slider__marker").getBoundingClientRect();
@@ -220,7 +225,6 @@
           return {
             trackStart: markerCenters[0],
             trackEnd: markerCenters[markerCenters.length - 1],
-            sliderTop: window.scrollY + sliderBounds.top,
             scrollStart,
             scrollEnd
           };
@@ -231,10 +235,7 @@
           const clampedProgress = Math.min(1, Math.max(0, progress));
           const activePosition = metrics.trackStart + ((metrics.trackEnd - metrics.trackStart) * clampedProgress);
           const closestIndex = Math.round(clampedProgress * (spaceDestinations.length - 1));
-          const headerHeight = document.querySelector(".site-header").offsetHeight;
-          const minimumRocketTop = headerHeight + 36;
-          const maximumRocketTop = Math.max(minimumRocketTop, window.innerHeight - rocket.offsetHeight - 12);
-          const rocketTop = window.scrollY + minimumRocketTop + ((maximumRocketTop - minimumRocketTop) * clampedProgress) - metrics.sliderTop;
+          const rocketTop = activePosition - rocket.offsetHeight;
 
           spaceSlider.style.setProperty("--track-top", `${metrics.trackStart}px`);
           spaceSlider.style.setProperty("--track-bottom", `${Math.max(0, spaceSlider.clientHeight - metrics.trackEnd)}px`);

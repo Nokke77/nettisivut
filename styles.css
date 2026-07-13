@@ -266,7 +266,6 @@ a:focus-visible {
   --track-top: 132px;
   --track-bottom: 88px;
   --progress-height: 0px;
-  --rocket-position: 0px;
   position: relative;
   align-self: stretch;
   min-height: 100%;
