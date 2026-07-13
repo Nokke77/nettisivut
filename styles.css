@@ -251,6 +251,151 @@ a:focus-visible {
   padding: 72px 0 96px;
 }
 
+.about-layout {
+  display: grid;
+  grid-template-columns: minmax(166px, 210px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(20px, 3vw, 42px);
+}
+
+.about-content {
+  min-width: 0;
+}
+
+.space-slider {
+  --track-top: 132px;
+  --track-bottom: 88px;
+  --progress-height: 0px;
+  --rocket-position: 0px;
+  position: sticky;
+  top: 100px;
+  height: 600px;
+  isolation: isolate;
+}
+
+.space-slider__track,
+.space-slider__progress {
+  position: absolute;
+  left: 9px;
+  width: 2px;
+  border-radius: 999px;
+}
+
+.space-slider__track {
+  top: var(--track-top);
+  bottom: var(--track-bottom);
+  z-index: -2;
+  background: linear-gradient(180deg, rgba(255, 152, 91, 0.42), rgba(112, 119, 170, 0.64));
+  box-shadow: 0 0 12px rgba(123, 97, 255, 0.2);
+}
+
+.space-slider__progress {
+  top: 0;
+  height: var(--progress-height);
+  background: linear-gradient(180deg, #ff9a4f, #ff555e);
+  box-shadow: 0 0 14px rgba(255, 100, 77, 0.85), 0 0 28px rgba(255, 75, 83, 0.45);
+  transition: height 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.space-slider__rocket {
+  position: absolute;
+  top: calc(var(--rocket-position) - 164px);
+  left: -48px;
+  z-index: 3;
+  width: 116px;
+  height: 164px;
+  object-fit: contain;
+  filter: drop-shadow(0 9px 13px rgba(0, 0, 0, 0.68)) drop-shadow(0 0 13px rgba(255, 121, 56, 0.42));
+  pointer-events: none;
+  transition: top 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.space-slider__list {
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  height: 100%;
+  margin: 0;
+  padding: 158px 0 74px;
+}
+
+.space-slider__item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.space-slider__marker {
+  width: 16px;
+  height: 16px;
+  margin-top: 5px;
+  border: 2px solid #ff7e4d;
+  border-radius: 50%;
+  background: #16121b;
+  box-shadow: 0 0 0 4px rgba(9, 8, 13, 0.85);
+  transition: background-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.space-slider__item-content {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+}
+
+.space-slider__label {
+  font-size: 0.83rem;
+  font-weight: 750;
+  line-height: 1.25;
+  transition: color 220ms ease;
+}
+
+.space-slider__image {
+  width: 60px;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0c0c13;
+  box-shadow: 0 9px 18px rgba(0, 0, 0, 0.45);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.space-slider__item:hover .space-slider__label,
+.space-slider__item.is-active .space-slider__label {
+  color: var(--text);
+}
+
+.space-slider__item:hover .space-slider__image,
+.space-slider__item.is-active .space-slider__image {
+  border-color: #ff8750;
+  box-shadow: 0 0 0 3px rgba(255, 121, 77, 0.16), 0 10px 22px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 100, 77, 0.35);
+  transform: translateY(-1px) scale(1.035);
+}
+
+.space-slider__item.is-active .space-slider__marker {
+  background: #ff694c;
+  box-shadow: 0 0 0 4px rgba(9, 8, 13, 0.85), 0 0 14px rgba(255, 104, 75, 0.95), 0 0 28px rgba(255, 81, 83, 0.52);
+  transform: scale(1.12);
+}
+
+.space-slider__item:focus-visible {
+  outline: none;
+}
+
+.space-slider__item:focus-visible .space-slider__item-content {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+
 .intro-grid,
 .two-column {
   display: grid;
@@ -530,6 +675,30 @@ a:focus-visible {
   .two-column,
   .contact-wrap {
     grid-template-columns: 1fr;
+  }
+
+  .about-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .space-slider {
+    position: relative;
+    top: auto;
+    width: min(100%, 330px);
+    height: 580px;
+    margin: 0 auto 6px;
+  }
+
+  .space-slider__list {
+    padding-top: 150px;
+    padding-bottom: 60px;
+  }
+
+  .space-slider__rocket {
+    width: 102px;
+    height: 145px;
+    top: calc(var(--rocket-position) - 145px);
+    left: -42px;
   }
 
   .content {

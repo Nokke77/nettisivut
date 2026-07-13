@@ -29,6 +29,16 @@
       </header>
 
       <div class="content">
+        <div class="about-layout">
+          <aside class="space-slider" data-space-slider aria-label="Urapolku avaruudessa">
+            <div class="space-slider__track" aria-hidden="true">
+              <span class="space-slider__progress"></span>
+            </div>
+            <img class="space-slider__rocket" src="images/rocket.png" alt="" aria-hidden="true">
+            <div class="space-slider__list" data-space-slider-list></div>
+          </aside>
+
+          <div class="about-content">
         <div class="intro-grid">
           <section class="card">
             <h2>Minä?</h2>
@@ -137,6 +147,8 @@
             <a class="button primary" href="yhteystiedot.html">Yhteystiedot</a>
           </section>
         </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -146,5 +158,81 @@
         <p>Kaikki oikeudet pidätetään</p>
       </div>
     </footer>
+    <script>
+      const spaceDestinations = [
+        { name: "Mars", image: "images/mars.jpg" },
+        { name: "Kuu", image: "images/moon.jpg" },
+        { name: "ISS Space Station", image: "images/iss.jpg" },
+        { name: "Maa", image: "images/earth.jpg" }
+      ];
+
+      const spaceSlider = document.querySelector("[data-space-slider]");
+      const spaceSliderList = document.querySelector("[data-space-slider-list]");
+
+      if (spaceSlider && spaceSliderList) {
+        let activeIndex = spaceDestinations.length - 1;
+
+        spaceDestinations.forEach((destination, index) => {
+          const button = document.createElement("button");
+          button.className = "space-slider__item";
+          button.type = "button";
+          button.setAttribute("aria-pressed", "false");
+
+          const marker = document.createElement("span");
+          marker.className = "space-slider__marker";
+          marker.setAttribute("aria-hidden", "true");
+
+          const content = document.createElement("span");
+          content.className = "space-slider__item-content";
+
+          const label = document.createElement("span");
+          label.className = "space-slider__label";
+          label.textContent = destination.name;
+
+          const image = document.createElement("img");
+          image.className = "space-slider__image";
+          image.src = destination.image;
+          image.alt = "";
+          image.loading = "lazy";
+
+          content.append(label, image);
+          button.append(marker, content);
+          button.addEventListener("click", () => setActive(index));
+          spaceSliderList.append(button);
+        });
+
+        const sliderItems = [...spaceSliderList.querySelectorAll(".space-slider__item")];
+
+        function positionSlider() {
+          const sliderBounds = spaceSlider.getBoundingClientRect();
+          const markerCenters = sliderItems.map((item) => {
+            const markerBounds = item.querySelector(".space-slider__marker").getBoundingClientRect();
+            return markerBounds.top - sliderBounds.top + markerBounds.height / 2;
+          });
+          const activePosition = markerCenters[activeIndex];
+          const trackStart = markerCenters[0];
+          const trackEnd = markerCenters[markerCenters.length - 1];
+
+          spaceSlider.style.setProperty("--track-top", `${trackStart}px`);
+          spaceSlider.style.setProperty("--track-bottom", `${Math.max(0, spaceSlider.clientHeight - trackEnd)}px`);
+          spaceSlider.style.setProperty("--progress-height", `${Math.max(0, activePosition - trackStart)}px`);
+          spaceSlider.style.setProperty("--rocket-position", `${activePosition}px`);
+        }
+
+        function setActive(index) {
+          activeIndex = index;
+          sliderItems.forEach((item, itemIndex) => {
+            const isActive = itemIndex === activeIndex;
+            item.classList.toggle("is-active", isActive);
+            item.setAttribute("aria-pressed", String(isActive));
+          });
+          positionSlider();
+        }
+
+        window.addEventListener("resize", positionSlider);
+        window.addEventListener("load", positionSlider, { once: true });
+        setActive(activeIndex);
+      }
+    </script>
   </body>
 </html>
