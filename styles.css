@@ -123,7 +123,7 @@ a:focus-visible {
   overflow: hidden;
   padding: 72px 20px;
   background-image: url("Taustakuva.jpg");
-  background-position: center;
+  background-position: center 58%;
   background-size: cover;
 }
 
@@ -216,7 +216,7 @@ a:focus-visible {
   inset: 0;
   background:
     linear-gradient(90deg, rgba(7, 7, 11, 0.9), rgba(7, 7, 11, 0.56)),
-    url("Taustakuva.jpg") center 45% / cover;
+    url("Taustakuva.jpg") center 58% / cover;
   opacity: 0.75;
 }
 
@@ -519,7 +519,7 @@ a:focus-visible {
 
   .hero {
     min-height: calc(100svh - 122px);
-    background-position: 58% center;
+    background-position: 58% 58%;
   }
 
   .hero-title {
