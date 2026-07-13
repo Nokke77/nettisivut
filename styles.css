@@ -263,6 +263,8 @@ a:focus-visible {
 }
 
 .space-slider {
+  --rail-x: 10px;
+  --rocket-half-width: 58px;
   --track-top: 132px;
   --track-bottom: 88px;
   --progress-height: 0px;
@@ -272,25 +274,29 @@ a:focus-visible {
   isolation: isolate;
 }
 
-.space-slider__track,
-.space-slider__progress {
+.space-slider__track {
   position: absolute;
-  left: 9px;
+  left: var(--rail-x);
   width: 2px;
   border-radius: 999px;
+  transform: translateX(-50%);
 }
 
 .space-slider__track {
   top: var(--track-top);
   bottom: var(--track-bottom);
-  z-index: -2;
+  z-index: 0;
   background: linear-gradient(180deg, rgba(255, 152, 91, 0.42), rgba(112, 119, 170, 0.64));
   box-shadow: 0 0 12px rgba(123, 97, 255, 0.2);
 }
 
 .space-slider__progress {
+  position: absolute;
   top: 0;
+  left: 0;
+  width: 100%;
   height: var(--progress-height);
+  border-radius: inherit;
   background: linear-gradient(180deg, #ff9a4f, #ff555e);
   box-shadow: 0 0 14px rgba(255, 100, 77, 0.85), 0 0 28px rgba(255, 75, 83, 0.45);
   transition: height 480ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -299,8 +305,8 @@ a:focus-visible {
 .space-slider__rocket {
   position: absolute;
   top: var(--rocket-top, 0px);
-  left: -48px;
-  z-index: 3;
+  left: calc(var(--rail-x) - var(--rocket-half-width));
+  z-index: 2;
   width: 116px;
   height: 164px;
   object-fit: contain;
@@ -316,6 +322,7 @@ a:focus-visible {
   grid-template-rows: repeat(4, minmax(0, 1fr));
   margin: 0;
   padding: 158px 0 74px;
+  z-index: 1;
 }
 
 .space-slider__item {
@@ -700,9 +707,9 @@ a:focus-visible {
   }
 
   .space-slider__rocket {
+    --rocket-half-width: 51px;
     width: 102px;
     height: 145px;
-    left: -42px;
   }
 
   .content {
