@@ -187,17 +187,13 @@
           const content = document.createElement("span");
           content.className = "space-slider__item-content";
 
-          const label = document.createElement("span");
-          label.className = "space-slider__label";
-          label.textContent = destination.name;
-
           const image = document.createElement("img");
           image.className = "space-slider__image";
           image.src = destination.image;
           image.alt = "";
           image.loading = "lazy";
 
-          content.append(label, image);
+          content.append(image);
           button.append(marker, content);
           button.addEventListener("click", () => scrollToProgress(index / (spaceDestinations.length - 1), "smooth"));
           spaceSliderList.append(button);
