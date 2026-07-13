@@ -166,7 +166,6 @@
       const aboutContent = document.querySelector(".about-content");
 
       if (spaceSlider && spaceSliderList && aboutContent) {
-        let activeIndex = 0;
         let animationFrame;
 
         spaceDestinations.forEach((destination, index) => {
@@ -210,6 +209,7 @@
           const scrollEnd = Math.max(scrollStart + 1, document.documentElement.scrollHeight - window.innerHeight);
 
           return {
+            markerCenters,
             trackStart: markerCenters[0],
             trackEnd: markerCenters[markerCenters.length - 1],
             scrollStart,
@@ -223,7 +223,6 @@
           const activePosition = metrics.trackStart + ((metrics.trackEnd - metrics.trackStart) * clampedProgress);
           const trailTop = activePosition - metrics.trackStart;
           const trailHeight = metrics.trackEnd - activePosition;
-          const reachedIndex = Math.ceil((clampedProgress * (spaceDestinations.length - 1)) - Number.EPSILON);
           const rocketTop = activePosition - rocket.offsetHeight;
 
           spaceSlider.style.setProperty("--track-top", `${metrics.trackStart}px`);
@@ -232,11 +231,10 @@
           spaceSlider.style.setProperty("--progress-height", `${Math.max(0, trailHeight)}px`);
           spaceSlider.style.setProperty("--rocket-top", `${rocketTop}px`);
           sliderItems.forEach((item, itemIndex) => {
-            const isActive = itemIndex >= reachedIndex;
+            const isActive = itemIndex === sliderItems.length - 1 || activePosition <= metrics.markerCenters[itemIndex] + 3;
             item.classList.toggle("is-active", isActive);
             item.setAttribute("aria-pressed", String(isActive));
           });
-          activeIndex = reachedIndex;
         }
 
         function updateFromScroll() {
