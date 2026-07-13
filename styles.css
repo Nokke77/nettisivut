@@ -122,7 +122,7 @@ a:focus-visible {
   min-height: calc(100svh - 76px);
   overflow: hidden;
   padding: 72px 20px;
-  background-image: url("Taustakuva.jpg");
+  background-image: url("images/Taustakuva.jpg");
   background-position: center 58%;
   background-size: cover;
 }
@@ -216,7 +216,7 @@ a:focus-visible {
   inset: 0;
   background:
     linear-gradient(90deg, rgba(7, 7, 11, 0.9), rgba(7, 7, 11, 0.56)),
-    url("Taustakuva.jpg") center 58% / cover;
+    url("images/Taustakuva.jpg") center 58% / cover;
   opacity: 0.75;
 }
 
@@ -299,23 +299,15 @@ a:focus-visible {
 
 .space-slider__rocket {
   position: absolute;
-  top: calc(var(--rocket-position) - 164px);
+  top: var(--rocket-top, 0px);
   left: -48px;
   z-index: 3;
   width: 116px;
   height: 164px;
   object-fit: contain;
   filter: drop-shadow(0 9px 13px rgba(0, 0, 0, 0.68)) drop-shadow(0 0 13px rgba(255, 121, 56, 0.42));
-  cursor: grab;
-  pointer-events: auto;
-  touch-action: none;
-  user-select: none;
+  pointer-events: none;
   transition: top 560ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.space-slider__rocket.is-dragging {
-  cursor: grabbing;
-  transition: none;
 }
 
 .space-slider__list {
@@ -340,6 +332,11 @@ a:focus-visible {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  align-self: start;
+}
+
+.space-slider__item:last-child {
+  align-self: end;
 }
 
 .space-slider__marker {
@@ -706,7 +703,6 @@ a:focus-visible {
   .space-slider__rocket {
     width: 102px;
     height: 145px;
-    top: calc(var(--rocket-position) - 145px);
     left: -42px;
   }
 

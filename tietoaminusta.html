@@ -172,7 +172,6 @@
 
       if (spaceSlider && spaceSliderList && aboutContent) {
         let activeIndex = 0;
-        let isDragging = false;
         let animationFrame;
 
         spaceDestinations.forEach((destination, index) => {
@@ -216,11 +215,12 @@
           const contentBounds = aboutContent.getBoundingClientRect();
           const contentTop = window.scrollY + contentBounds.top;
           const scrollStart = Math.max(0, contentTop - 108);
-          const scrollEnd = Math.max(scrollStart + 1, contentTop + aboutContent.offsetHeight - window.innerHeight + 108);
+          const scrollEnd = Math.max(scrollStart + 1, document.documentElement.scrollHeight - window.innerHeight);
 
           return {
             trackStart: markerCenters[0],
             trackEnd: markerCenters[markerCenters.length - 1],
+            sliderTop: window.scrollY + sliderBounds.top,
             scrollStart,
             scrollEnd
           };
@@ -231,11 +231,15 @@
           const clampedProgress = Math.min(1, Math.max(0, progress));
           const activePosition = metrics.trackStart + ((metrics.trackEnd - metrics.trackStart) * clampedProgress);
           const closestIndex = Math.round(clampedProgress * (spaceDestinations.length - 1));
+          const headerHeight = document.querySelector(".site-header").offsetHeight;
+          const minimumRocketTop = headerHeight + 36;
+          const maximumRocketTop = Math.max(minimumRocketTop, window.innerHeight - rocket.offsetHeight - 12);
+          const rocketTop = window.scrollY + minimumRocketTop + ((maximumRocketTop - minimumRocketTop) * clampedProgress) - metrics.sliderTop;
 
           spaceSlider.style.setProperty("--track-top", `${metrics.trackStart}px`);
           spaceSlider.style.setProperty("--track-bottom", `${Math.max(0, spaceSlider.clientHeight - metrics.trackEnd)}px`);
           spaceSlider.style.setProperty("--progress-height", `${Math.max(0, activePosition - metrics.trackStart)}px`);
-          spaceSlider.style.setProperty("--rocket-position", `${activePosition}px`);
+          spaceSlider.style.setProperty("--rocket-top", `${rocketTop}px`);
           sliderItems.forEach((item, itemIndex) => {
             const isActive = itemIndex === closestIndex;
             item.classList.toggle("is-active", isActive);
@@ -256,37 +260,6 @@
           window.scrollTo({ top: target, behavior });
           setSliderPosition(progress);
         }
-
-        function scrollFromPointer(event) {
-          const sliderBounds = spaceSlider.getBoundingClientRect();
-          const metrics = getSliderMetrics();
-          const position = event.clientY - sliderBounds.top;
-          const progress = (position - metrics.trackStart) / (metrics.trackEnd - metrics.trackStart);
-          scrollToProgress(Math.min(1, Math.max(0, progress)), "auto");
-        }
-
-        rocket.addEventListener("pointerdown", (event) => {
-          isDragging = true;
-          rocket.classList.add("is-dragging");
-          rocket.setPointerCapture(event.pointerId);
-          scrollFromPointer(event);
-        });
-
-        rocket.addEventListener("pointermove", (event) => {
-          if (isDragging) scrollFromPointer(event);
-        });
-
-        rocket.addEventListener("pointerup", (event) => {
-          isDragging = false;
-          rocket.classList.remove("is-dragging");
-          rocket.releasePointerCapture(event.pointerId);
-        });
-
-        spaceSlider.addEventListener("pointerdown", (event) => {
-          if (!event.target.closest(".space-slider__item, .space-slider__rocket")) {
-            scrollFromPointer(event);
-          }
-        });
 
         window.addEventListener("scroll", () => {
           window.cancelAnimationFrame(animationFrame);
