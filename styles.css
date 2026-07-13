@@ -267,6 +267,7 @@ a:focus-visible {
   --rocket-half-width: 58px;
   --track-top: 132px;
   --track-bottom: 88px;
+  --trail-top: 0px;
   --progress-height: 0px;
   position: relative;
   align-self: stretch;
@@ -286,20 +287,20 @@ a:focus-visible {
   top: var(--track-top);
   bottom: var(--track-bottom);
   z-index: 0;
-  background: linear-gradient(180deg, rgba(255, 152, 91, 0.42), rgba(112, 119, 170, 0.64));
+  background: linear-gradient(180deg, rgba(137, 151, 221, 0.42), rgba(86, 101, 177, 0.64));
   box-shadow: 0 0 12px rgba(123, 97, 255, 0.2);
 }
 
 .space-slider__progress {
   position: absolute;
-  top: 0;
+  top: var(--trail-top);
   left: 0;
   width: 100%;
   height: var(--progress-height);
   border-radius: inherit;
-  background: linear-gradient(180deg, #ff9a4f, #ff555e);
-  box-shadow: 0 0 14px rgba(255, 100, 77, 0.85), 0 0 28px rgba(255, 75, 83, 0.45);
-  transition: height 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, #fff5e9 0%, #a8d5ff 30%, #7184ff 100%);
+  box-shadow: 0 0 12px rgba(201, 231, 255, 0.9), 0 0 28px rgba(112, 132, 255, 0.62);
+  transition: top 480ms cubic-bezier(0.22, 1, 0.36, 1), height 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .space-slider__rocket {
