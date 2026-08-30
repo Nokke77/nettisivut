@@ -8,6 +8,8 @@ SkyScope koostuu kolmesta erillisestä osasta:
 
 Selain ei ota yhteyttä Raspberry Pi:hin. Workerille tai D1:een ei lähetetä vastaanottimen tai antennin koordinaatteja. Koordinaatteja käytetään vain Pi:llä lentokoneiden etäisyyksien laskemiseen.
 
+Tuotantoympäristö on käytössä osoitteessa `https://skyscope-api.noeljeromaa.workers.dev`. D1-tietokannan nimi on `skyscope`, ja sen ei-salainen tunniste on tallennettu `wrangler.toml`-tiedostoon. Älä luo uutta tietokantaa normaalin päivityksen yhteydessä.
+
 Alla olevat vaiheet tehdään täsmälleen tässä järjestyksessä. Repositorion juurella ei ole pakettienhallintaa tai build-vaihetta, joten ohje käyttää kiinnitettyä Wrangler-versiota kertaluonteisesti eikä muuta sivuston riippuvuuksia.
 
 ## 0. Esitarkastus
@@ -21,14 +23,13 @@ npx --yes wrangler@4.127.1 login
 
 Älä jatka, ellei kirjautuminen pääty oikealle Cloudflare-tilille.
 
-## 1. Luo Cloudflare D1 -tietokanta
+## 1. Luo Cloudflare D1 -tietokanta vain uuteen ympäristöön
 
 ```sh
 npx --yes wrangler@4.127.1 d1 create skyscope
 ```
 
-Komento tulostaa tietokannan UUID-tunnuksen. Korvaa `wrangler.toml`-tiedoston arvo
-`REPLACE_WITH_D1_DATABASE_ID` tällä UUID:lla. Älä muuta binding-nimeä `DB` tai tietokannan nimeä `skyscope`.
+Komento tulostaa tietokannan UUID-tunnuksen. Tallenna se `wrangler.toml`-tiedoston `database_id`-arvoksi. Älä muuta binding-nimeä `DB` tai tietokannan nimeä `skyscope`. Nykyisessä tuotantoympäristössä tämä vaihe on jo tehty.
 
 Tietokannan UUID ei ole salasana, mutta sitä ei pidä keksiä tai kopioida toisesta ympäristöstä.
 
@@ -74,8 +75,8 @@ Deployaa sitten:
 npx --yes wrangler@4.127.1 deploy
 ```
 
-Ota talteen komennon tulostama HTTPS-osoite, esimerkiksi
-`https://skyscope-api.YOUR_WORKERS_SUBDOMAIN.workers.dev`. Älä luo Cloudflareen reittiä, joka muuttaa `noeljeromaa.com`-domainin DNS- tai Pages-asetuksia.
+Tuotanto-Workerin osoite on `https://skyscope-api.noeljeromaa.workers.dev`.
+Älä luo Cloudflareen reittiä, joka muuttaa `noeljeromaa.com`-domainin DNS- tai Pages-asetuksia.
 
 ## 5. Määritä GitHub Pages -näkymän API-osoite
 
@@ -83,7 +84,7 @@ Muokkaa tiedostoa `skyscope/config.js` ja aseta Worker-origin ilman lopun kautta
 
 ```js
 window.SKYSCOPE_CONFIG = Object.freeze({
-  apiBaseUrl: "https://skyscope-api.YOUR_WORKERS_SUBDOMAIN.workers.dev"
+  apiBaseUrl: "https://skyscope-api.noeljeromaa.workers.dev"
 });
 ```
 
@@ -93,7 +94,7 @@ Tämä osoite ei ole salaisuus. Älä lisää tokenia samaan tiedostoon. Kun muu
 https://noeljeromaa.com/skyscope/
 ```
 
-Nykyiseen navigaatioon ei tarvitse lisätä linkkiä, eikä `CNAME`-tiedostoa muuteta.
+SkyScope-linkki kuuluu jokaisessa yläpalkissa kohtien **Tietoa minusta** ja **Yhteystiedot** väliin. `CNAME`-tiedostoa ei muuteta.
 
 ## 6. Asenna Pi-ohjelma
 

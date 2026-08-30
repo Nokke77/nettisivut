@@ -1,11 +1,13 @@
 import sys
+import sqlite3
+import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from exporter import build_current_aircraft, group_passes, haversine_km
+from exporter import build_current_aircraft, group_passes, haversine_km, read_observations
 
 
 class ExporterTests(unittest.TestCase):
@@ -45,6 +47,35 @@ class ExporterTests(unittest.TestCase):
         self.assertEqual(aircraft[0]["callsign"], "FIN1")
         self.assertNotIn("receiver_latitude", aircraft[0])
         self.assertNotIn("receiver_longitude", aircraft[0])
+
+    def test_sqlite_reader_supports_unix_and_iso_timestamps(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database_path = Path(directory) / "observations.sqlite"
+            connection = sqlite3.connect(database_path)
+            connection.execute(
+                """
+                CREATE TABLE observations (
+                    captured_at, icao TEXT, callsign TEXT,
+                    latitude REAL, longitude REAL
+                )
+                """
+            )
+            connection.executemany(
+                "INSERT INTO observations VALUES (?, ?, ?, ?, ?)",
+                [
+                    (datetime(2026, 8, 30, 10, tzinfo=timezone.utc).timestamp(), "ABC123", "FIN1", 1.0, 0.0),
+                    ("2026-08-30T10:05:00Z", "DEF456", "FIN2", None, None),
+                    (datetime(2026, 8, 20, 10, tzinfo=timezone.utc).timestamp(), "OLD123", None, None, None),
+                ],
+            )
+            connection.commit()
+            connection.close()
+
+            rows = read_observations(
+                str(database_path), datetime(2026, 8, 29, 10, tzinfo=timezone.utc)
+            )
+
+            self.assertEqual({row["icao"] for row in rows}, {"ABC123", "DEF456"})
 
 
 if __name__ == "__main__":

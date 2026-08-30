@@ -267,10 +267,16 @@ def read_observations(path: str, since: datetime) -> list[sqlite3.Row]:
             """
             SELECT captured_at, icao, callsign, latitude, longitude
             FROM observations
-            WHERE julianday(captured_at) >= julianday(?)
+            WHERE CASE
+              WHEN typeof(captured_at) IN ('integer', 'real')
+                THEN CAST(captured_at AS REAL) >= ?
+              WHEN captured_at GLOB '[0-9]*' AND captured_at NOT GLOB '*[^0-9.]*'
+                THEN CAST(captured_at AS REAL) >= ?
+              ELSE julianday(captured_at) >= julianday(?)
+            END
             ORDER BY icao, captured_at
             """,
-            (isoformat(since),),
+            (since.timestamp(), since.timestamp(), isoformat(since)),
         ).fetchall()
     finally:
         connection.close()
