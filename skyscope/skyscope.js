@@ -1,7 +1,11 @@
 import {
+  aircraftOwnerLine,
+  aircraftTypeLabel,
   deriveReceiverState,
+  feetToMetres,
   formatDateTime,
   hasValidPosition,
+  knotsToKmh,
   receiverStateLabels
 } from "./state.mjs";
 
@@ -68,6 +72,43 @@ function emptyState(message) {
   return paragraph;
 }
 
+function aircraftIdentity(aircraft, { includeIcao = false } = {}) {
+  const typeLabel = aircraftTypeLabel(aircraft);
+  const ownerLine = aircraftOwnerLine(aircraft);
+  const details = [
+    ownerLine,
+    includeIcao && aircraft?.icao ? `ICAO ${aircraft.icao}` : null
+  ].filter(Boolean);
+
+  if (!typeLabel && !details.length && aircraft?.is_military !== true) return null;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "aircraft-identity";
+
+  if (typeLabel) {
+    const type = document.createElement("p");
+    type.className = "aircraft-type";
+    type.textContent = typeLabel;
+    wrapper.append(type);
+  }
+
+  if (details.length) {
+    const owner = document.createElement("p");
+    owner.className = "aircraft-owner";
+    owner.textContent = details.join(" · ");
+    wrapper.append(owner);
+  }
+
+  if (aircraft?.is_military === true) {
+    const flag = document.createElement("span");
+    flag.className = "aircraft-flag";
+    flag.textContent = "Tietokannassa sotilaskoneeksi merkitty";
+    wrapper.append(flag);
+  }
+
+  return wrapper;
+}
+
 function aircraftCard(aircraft, hasPosition) {
   const article = document.createElement("article");
   article.className = "aircraft-card";
@@ -83,9 +124,15 @@ function aircraftCard(aircraft, hasPosition) {
 
   const metrics = document.createElement("dl");
   metrics.className = "aircraft-metrics";
+  const altitudeMetres = feetToMetres(aircraft.altitude_ft);
+  const speedKmh = knotsToKmh(aircraft.speed_knots);
   metrics.append(
-    metric("Korkeus", hasFiniteNumber(aircraft.altitude_ft) ? `${formatNumber(aircraft.altitude_ft)} ft` : "–"),
-    metric("Nopeus", hasFiniteNumber(aircraft.speed_knots) ? `${formatNumber(aircraft.speed_knots)} kt` : "–"),
+    metric("Korkeus", altitudeMetres !== null
+      ? `${formatNumber(altitudeMetres, { maximumFractionDigits: 0 })} m`
+      : "–"),
+    metric("Nopeus", speedKmh !== null
+      ? `${formatNumber(speedKmh, { maximumFractionDigits: 0 })} km/h`
+      : "–"),
     metric("Suunta", hasFiniteNumber(aircraft.track_deg) ? `${formatNumber(aircraft.track_deg, { maximumFractionDigits: 0 })}°` : "–"),
     metric("Signaali", hasFiniteNumber(aircraft.signal_db) ? `${formatNumber(aircraft.signal_db, { maximumFractionDigits: 1 })} dBFS` : "–")
   );
@@ -94,7 +141,10 @@ function aircraftCard(aircraft, hasPosition) {
     metrics.append(metric("Etäisyys", hasFiniteNumber(aircraft.distance_km) ? `${formatNumber(aircraft.distance_km, { maximumFractionDigits: 1 })} km` : "–"));
   }
 
-  article.append(heading, metrics);
+  const identity = aircraftIdentity(aircraft);
+  article.append(heading);
+  if (identity) article.append(identity);
+  article.append(metrics);
   return article;
 }
 
@@ -124,8 +174,12 @@ function passCard(pass) {
   eyebrow.className = "pass-callsign";
   eyebrow.textContent = pass.callsign || "Tuntematon kutsutunnus";
   const title = document.createElement("h3");
-  title.textContent = pass.icao || "–";
+  const typeLabel = aircraftTypeLabel(pass);
+  title.className = typeLabel ? "pass-aircraft-type" : "pass-icao-title";
+  title.textContent = typeLabel || pass.icao || "–";
   titleWrap.append(eyebrow, title);
+  const identity = aircraftIdentity(pass, { includeIcao: Boolean(typeLabel) });
+  if (identity) titleWrap.append(identity);
   const closest = document.createElement("strong");
   closest.className = "pass-distance";
   closest.textContent = hasFiniteNumber(pass.closest_distance_km)
@@ -167,11 +221,19 @@ function renderStats(stats = {}) {
     return;
   }
 
-  elements.closestAircraft.textContent = closest.callsign || closest.icao || "Tuntematon";
+  const typeLabel = aircraftTypeLabel(closest);
+  elements.closestAircraft.textContent = closest.callsign || typeLabel || closest.icao || "Tuntematon";
   const distance = hasFiniteNumber(closest.distance_km)
     ? `${formatNumber(closest.distance_km, { maximumFractionDigits: 1 })} km`
     : "etäisyys ei saatavilla";
-  elements.closestDetail.textContent = `${distance} · ${formatDateTime(closest.at)}`;
+  const identity = [
+    closest.callsign ? typeLabel : null,
+    aircraftOwnerLine(closest),
+    closest.is_military === true ? "sotilaskoneeksi merkitty" : null,
+    distance,
+    formatDateTime(closest.at)
+  ].filter(Boolean);
+  elements.closestDetail.textContent = identity.join(" · ");
 }
 
 function renderConnectionState() {

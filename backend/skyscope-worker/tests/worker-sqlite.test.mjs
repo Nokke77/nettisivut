@@ -4,10 +4,15 @@ import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import worker from "../src/worker.js";
 
-const migration = readFileSync(
+const initialMigration = readFileSync(
   new URL("../migrations/0001_initial.sql", import.meta.url),
   "utf8"
 );
+const metadataMigration = readFileSync(
+  new URL("../migrations/0002_aircraft_metadata.sql", import.meta.url),
+  "utf8"
+);
+const migration = `${initialMigration}\n${metadataMigration}`;
 
 class SqliteStatement {
   constructor(database, sql) {
@@ -73,6 +78,8 @@ const basePayload = {
   captured_at: "2026-08-30T10:00:00Z",
   aircraft: [{
     icao: "ABC123", callsign: "FIN123", latitude: 62.9, longitude: 27.7,
+    registration: "OH-ATI", type_code: "AT75", type_description: "ATR 72-500",
+    owner_operator: "Finnair Oyj", is_military: false,
     altitude_ft: 12000, speed_knots: 310, track_deg: 180, signal_db: -12.5,
     distance_km: 14.2, messages: 100, seen_at: "2026-08-30T09:59:59Z"
   }],
@@ -123,6 +130,49 @@ function statsRow(database) {
   return database.row("SELECT * FROM daily_stats WHERE date = ?", basePayload.stats.date);
 }
 
+function metadataRow(database) {
+  return database.row("SELECT * FROM aircraft_metadata WHERE icao = ?", "ABC123");
+}
+
+test("metadata migration preserves existing production tables and rows", () => {
+  const sqlite = new DatabaseSync(":memory:");
+  try {
+    sqlite.exec(initialMigration);
+    sqlite.prepare(`
+      INSERT INTO passes (
+        id, icao, callsign, first_seen, last_seen,
+        closest_distance_km, closest_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      passId,
+      "ABC123",
+      "FIN123",
+      "2026-08-30T09:45:00.000Z",
+      "2026-08-30T10:00:00.000Z",
+      10.5,
+      "2026-08-30T09:55:00.000Z",
+      "2026-08-30T10:00:00.000Z"
+    );
+
+    sqlite.exec(metadataMigration);
+
+    assert.equal(
+      sqlite.prepare("SELECT COUNT(*) AS count FROM passes").get().count,
+      1
+    );
+    assert.equal(
+      sqlite.prepare(`
+        SELECT COUNT(*) AS count
+        FROM sqlite_master
+        WHERE type = 'table' AND name = 'aircraft_metadata'
+      `).get().count,
+      1
+    );
+  } finally {
+    sqlite.close();
+  }
+});
+
 test("first snapshot inserts a pass and daily stats", async (t) => {
   const database = new SqliteD1();
   t.after(() => database.close());
@@ -131,6 +181,8 @@ test("first snapshot inserts a pass and daily stats", async (t) => {
 
   assert.equal(passRow(database).last_seen, "2026-08-30T10:00:00.000Z");
   assert.equal(statsRow(database).pass_count, 1);
+  assert.equal(metadataRow(database).type_description, "ATR 72-500");
+  assert.equal(metadataRow(database).is_military, 0);
 });
 
 test("identical snapshot only updates receiver_state", async (t) => {
@@ -314,4 +366,85 @@ test("receiver_state continues to update for newer snapshots", async (t) => {
 
   const receiver = database.row("SELECT * FROM receiver_state WHERE id = 1");
   assert.equal(receiver.captured_at, "2026-08-30T10:05:00.000Z");
+});
+
+test("new aircraft metadata is stored and later completed", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  const sparse = clonePayload();
+  sparse.aircraft[0].registration = null;
+  sparse.aircraft[0].type_code = null;
+  sparse.aircraft[0].type_description = null;
+  sparse.aircraft[0].owner_operator = null;
+  sparse.aircraft[0].is_military = null;
+  await ingest(database, sparse);
+  assert.equal(metadataRow(database), null);
+
+  const complete = clonePayload();
+  complete.captured_at = "2026-08-30T10:05:00Z";
+  complete.passes = [];
+  await ingest(database, complete);
+
+  assert.equal(metadataRow(database).registration, "OH-ATI");
+  assert.equal(metadataRow(database).owner_operator, "Finnair Oyj");
+});
+
+test("missing metadata never erases known aircraft identity", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  await ingest(database, clonePayload());
+  const sparse = clonePayload();
+  sparse.captured_at = "2026-08-30T10:05:00Z";
+  sparse.passes = [];
+  sparse.aircraft[0].registration = null;
+  sparse.aircraft[0].type_code = null;
+  sparse.aircraft[0].type_description = null;
+  sparse.aircraft[0].owner_operator = null;
+  sparse.aircraft[0].is_military = null;
+
+  await ingest(database, sparse);
+
+  assert.equal(metadataRow(database).registration, "OH-ATI");
+  assert.equal(metadataRow(database).owner_operator, "Finnair Oyj");
+});
+
+test("older metadata cannot replace a newer aircraft identity", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  const newer = clonePayload();
+  newer.captured_at = "2026-08-30T10:05:00Z";
+  newer.aircraft[0].owner_operator = "Current operator";
+  await ingest(database, newer);
+  const older = clonePayload();
+  older.captured_at = "2026-08-30T10:00:00Z";
+  older.passes = [];
+  older.aircraft[0].owner_operator = "Old operator";
+
+  await ingest(database, older);
+
+  assert.equal(metadataRow(database).owner_operator, "Current operator");
+  assert.equal(metadataRow(database).updated_at, "2026-08-30T10:05:00.000Z");
+});
+
+test("pass and daily-stat APIs join aircraft identity metadata", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  await ingest(database, clonePayload());
+  const env = environment(database);
+
+  const passesResponse = await worker.fetch(
+    new Request("https://api.example.test/api/passes"),
+    env
+  );
+  const statsResponse = await worker.fetch(
+    new Request("https://api.example.test/api/stats"),
+    env
+  );
+  const passes = await passesResponse.json();
+  const stats = await statsResponse.json();
+
+  assert.equal(passes.passes[0].type_code, "AT75");
+  assert.equal(passes.passes[0].is_military, false);
+  assert.equal(stats.closest_aircraft.type_description, "ATR 72-500");
+  assert.equal(stats.closest_aircraft.owner_operator, "Finnair Oyj");
 });

@@ -67,6 +67,12 @@ function optionalString(value, label, maxLength = 128) {
   return requiredString(value, label, maxLength);
 }
 
+function optionalBoolean(value, label) {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "boolean") throw new TypeError(`${label} must be a boolean`);
+  return value;
+}
+
 function boundedNumber(value, label, minimum, maximum, nullable = true) {
   if (value === null || value === undefined) {
     if (nullable) return null;
@@ -103,6 +109,19 @@ function validateAircraft(value, index) {
   return {
     icao: icao(item.icao, `aircraft[${index}].icao`),
     callsign: optionalString(item.callsign, `aircraft[${index}].callsign`, 16),
+    registration: optionalString(item.registration, `aircraft[${index}].registration`, 32),
+    type_code: optionalString(item.type_code, `aircraft[${index}].type_code`, 16),
+    type_description: optionalString(
+      item.type_description,
+      `aircraft[${index}].type_description`,
+      128
+    ),
+    owner_operator: optionalString(
+      item.owner_operator,
+      `aircraft[${index}].owner_operator`,
+      160
+    ),
+    is_military: optionalBoolean(item.is_military, `aircraft[${index}].is_military`),
     latitude: boundedNumber(item.latitude, `aircraft[${index}].latitude`, -90, 90),
     longitude: boundedNumber(item.longitude, `aircraft[${index}].longitude`, -180, 180),
     altitude_ft: boundedNumber(item.altitude_ft, `aircraft[${index}].altitude_ft`, -2000, 100000),
@@ -209,6 +228,13 @@ async function handleIngest(request, env, origin) {
   }
 
   const receivedAt = new Date().toISOString();
+  const aircraftWithMetadata = payload.aircraft.filter((aircraft) => (
+    aircraft.registration !== null
+    || aircraft.type_code !== null
+    || aircraft.type_description !== null
+    || aircraft.owner_operator !== null
+    || aircraft.is_military !== null
+  ));
   const statements = [
     env.DB.prepare(`
       INSERT INTO receiver_state (id, captured_at, received_at, aircraft_json)
@@ -219,6 +245,56 @@ async function handleIngest(request, env, origin) {
         aircraft_json = excluded.aircraft_json
       WHERE excluded.captured_at >= receiver_state.captured_at
     `).bind(payload.captured_at, receivedAt, JSON.stringify(payload.aircraft)),
+    ...aircraftWithMetadata.map((aircraft) => env.DB.prepare(`
+      INSERT INTO aircraft_metadata (
+        icao, registration, type_code, type_description,
+        owner_operator, is_military, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(icao) DO UPDATE SET
+        registration = COALESCE(excluded.registration, aircraft_metadata.registration),
+        type_code = COALESCE(excluded.type_code, aircraft_metadata.type_code),
+        type_description = COALESCE(
+          excluded.type_description,
+          aircraft_metadata.type_description
+        ),
+        owner_operator = COALESCE(
+          excluded.owner_operator,
+          aircraft_metadata.owner_operator
+        ),
+        is_military = COALESCE(excluded.is_military, aircraft_metadata.is_military),
+        updated_at = excluded.updated_at
+      WHERE excluded.updated_at >= aircraft_metadata.updated_at
+        AND (
+          (
+            excluded.registration IS NOT NULL
+            AND excluded.registration IS NOT aircraft_metadata.registration
+          )
+          OR (
+            excluded.type_code IS NOT NULL
+            AND excluded.type_code IS NOT aircraft_metadata.type_code
+          )
+          OR (
+            excluded.type_description IS NOT NULL
+            AND excluded.type_description IS NOT aircraft_metadata.type_description
+          )
+          OR (
+            excluded.owner_operator IS NOT NULL
+            AND excluded.owner_operator IS NOT aircraft_metadata.owner_operator
+          )
+          OR (
+            excluded.is_military IS NOT NULL
+            AND excluded.is_military IS NOT aircraft_metadata.is_military
+          )
+        )
+    `).bind(
+      aircraft.icao,
+      aircraft.registration,
+      aircraft.type_code,
+      aircraft.type_description,
+      aircraft.owner_operator,
+      aircraft.is_military === null ? null : Number(aircraft.is_military),
+      payload.captured_at
+    )),
     ...payload.passes.map((pass) => env.DB.prepare(`
       INSERT INTO passes (
         id, icao, callsign, first_seen, last_seen,
@@ -332,12 +408,23 @@ async function getPasses(request, env, origin) {
   const configuredMaximum = numberSetting(env.MAX_PUBLIC_PASSES, 50, 1, 100);
   const requested = numberSetting(new URL(request.url).searchParams.get("limit"), configuredMaximum, 1, configuredMaximum);
   const result = await env.DB.prepare(`
-    SELECT id, icao, callsign, first_seen, last_seen, closest_distance_km, closest_at
-    FROM passes
-    ORDER BY last_seen DESC
+    SELECT
+      p.id, p.icao, p.callsign, p.first_seen, p.last_seen,
+      p.closest_distance_km, p.closest_at,
+      m.registration, m.type_code, m.type_description,
+      m.owner_operator, m.is_military
+    FROM passes AS p
+    LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
+    ORDER BY p.last_seen DESC
     LIMIT ?
   `).bind(requested).all();
-  return jsonResponse({ passes: result.results || [] }, 200, origin);
+  const passes = (result.results || []).map((pass) => ({
+    ...pass,
+    is_military: pass.is_military === null || pass.is_military === undefined
+      ? null
+      : Boolean(pass.is_military)
+  }));
+  return jsonResponse({ passes }, 200, origin);
 }
 
 async function getStats(request, env, origin) {
@@ -345,9 +432,17 @@ async function getStats(request, env, origin) {
   if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
     return jsonResponse({ error: "Invalid date" }, 400, origin);
   }
+  const selection = `
+    SELECT
+      s.*,
+      m.registration, m.type_code, m.type_description,
+      m.owner_operator, m.is_military
+    FROM daily_stats AS s
+    LEFT JOIN aircraft_metadata AS m ON m.icao = s.closest_icao
+  `;
   const row = requestedDate
-    ? await env.DB.prepare("SELECT * FROM daily_stats WHERE date = ?").bind(requestedDate).first()
-    : await env.DB.prepare("SELECT * FROM daily_stats ORDER BY date DESC LIMIT 1").first();
+    ? await env.DB.prepare(`${selection} WHERE s.date = ?`).bind(requestedDate).first()
+    : await env.DB.prepare(`${selection} ORDER BY s.date DESC LIMIT 1`).first();
 
   if (!row) {
     return jsonResponse({
@@ -364,6 +459,13 @@ async function getStats(request, env, origin) {
     closest_aircraft: row.closest_icao ? {
       icao: row.closest_icao,
       callsign: row.closest_callsign,
+      registration: row.registration,
+      type_code: row.type_code,
+      type_description: row.type_description,
+      owner_operator: row.owner_operator,
+      is_military: row.is_military === null || row.is_military === undefined
+        ? null
+        : Boolean(row.is_military),
       distance_km: row.closest_distance_km,
       at: row.closest_at
     } : null

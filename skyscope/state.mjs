@@ -54,6 +54,46 @@ export function hasValidPosition(aircraft) {
   );
 }
 
+function finiteNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+export function feetToMetres(value) {
+  const feet = finiteNumber(value);
+  return feet === null ? null : feet * 0.3048;
+}
+
+export function knotsToKmh(value) {
+  const knots = finiteNumber(value);
+  return knots === null ? null : knots * 1.852;
+}
+
+export function aircraftTypeLabel(aircraft) {
+  const description = typeof aircraft?.type_description === "string"
+    ? aircraft.type_description.trim()
+    : "";
+  const code = typeof aircraft?.type_code === "string"
+    ? aircraft.type_code.trim().toUpperCase()
+    : "";
+
+  if (description && code && description.toUpperCase() !== code) {
+    return `${description} (${code})`;
+  }
+  return description || code || null;
+}
+
+export function aircraftOwnerLine(aircraft) {
+  const ownerOperator = typeof aircraft?.owner_operator === "string"
+    ? aircraft.owner_operator.trim()
+    : "";
+  const registration = typeof aircraft?.registration === "string"
+    ? aircraft.registration.trim().toUpperCase()
+    : "";
+  return [ownerOperator, registration].filter(Boolean).join(" · ") || null;
+}
+
 export const receiverStateLabels = Object.freeze({
   online: "Online",
   stale: "Vanhentunut",

@@ -35,7 +35,17 @@ class ExporterTests(unittest.TestCase):
     def test_missing_position_is_kept_without_distance(self):
         payload = {
             "now": 1788084000,
-            "aircraft": [{"hex": "abc123", "flight": " FIN1 ", "alt_baro": "ground", "seen": 1.5}],
+            "aircraft": [{
+                "hex": "abc123",
+                "flight": " FIN1 ",
+                "alt_baro": "ground",
+                "seen": 1.5,
+                "r": " oh-ati ",
+                "t": "at75",
+                "desc": " ATR 72-500 ",
+                "ownOp": " Finnair   Oyj ",
+                "dbFlags": 0,
+            }],
         }
         _, aircraft = build_current_aircraft(
             payload, 0.0, 0.0, datetime(2026, 8, 30, 10, tzinfo=timezone.utc)
@@ -45,8 +55,46 @@ class ExporterTests(unittest.TestCase):
         self.assertIsNone(aircraft[0]["longitude"])
         self.assertIsNone(aircraft[0]["distance_km"])
         self.assertEqual(aircraft[0]["callsign"], "FIN1")
+        self.assertEqual(aircraft[0]["registration"], "OH-ATI")
+        self.assertEqual(aircraft[0]["type_code"], "AT75")
+        self.assertEqual(aircraft[0]["type_description"], "ATR 72-500")
+        self.assertEqual(aircraft[0]["owner_operator"], "Finnair Oyj")
+        self.assertFalse(aircraft[0]["is_military"])
         self.assertNotIn("receiver_latitude", aircraft[0])
         self.assertNotIn("receiver_longitude", aircraft[0])
+
+    def test_military_flag_is_derived_without_exposing_other_database_flags(self):
+        payload = {
+            "now": 1788084000,
+            "aircraft": [{
+                "hex": "abc123",
+                "dbFlags": 13,
+                "seen": 0,
+            }],
+        }
+
+        _, aircraft = build_current_aircraft(
+            payload, 0.0, 0.0, datetime(2026, 8, 30, 10, tzinfo=timezone.utc)
+        )
+
+        self.assertTrue(aircraft[0]["is_military"])
+        self.assertNotIn("db_flags", aircraft[0])
+
+    def test_missing_aircraft_database_fields_remain_unknown(self):
+        payload = {
+            "now": 1788084000,
+            "aircraft": [{"hex": "abc123", "seen": 0}],
+        }
+
+        _, aircraft = build_current_aircraft(
+            payload, 0.0, 0.0, datetime(2026, 8, 30, 10, tzinfo=timezone.utc)
+        )
+
+        self.assertIsNone(aircraft[0]["registration"])
+        self.assertIsNone(aircraft[0]["type_code"])
+        self.assertIsNone(aircraft[0]["type_description"])
+        self.assertIsNone(aircraft[0]["owner_operator"])
+        self.assertIsNone(aircraft[0]["is_military"])
 
     def test_sqlite_reader_supports_unix_and_iso_timestamps(self):
         with tempfile.TemporaryDirectory() as directory:

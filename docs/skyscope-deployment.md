@@ -3,7 +3,7 @@
 SkyScope koostuu kolmesta erillisestä osasta:
 
 1. `skyscope/` on nykyiseen GitHub Pages -sivustoon kuuluva staattinen näkymä.
-2. `backend/skyscope-worker/` on Cloudflare Worker ja D1-migraatio.
+2. `backend/skyscope-worker/` on Cloudflare Worker ja D1-migraatiot.
 3. `tools/skyscope-pi/` lukee Raspberry Pi:n paikalliset lähteet ja lähettää aggregoidun snapshotin Workerille.
 
 Selain ei ota yhteyttä Raspberry Pi:hin. Workerille tai D1:een ei lähetetä vastaanottimen tai antennin koordinaatteja. Koordinaatteja käytetään vain Pi:llä lentokoneiden etäisyyksien laskemiseen.
@@ -42,7 +42,12 @@ npx --yes wrangler@4.127.1 d1 migrations list skyscope --remote
 npx --yes wrangler@4.127.1 d1 migrations apply skyscope --remote
 ```
 
-Varmista, että `0001_initial.sql` näkyy onnistuneesti ajettuna. Migraatio luo vain vastaanottimen uusimman snapshotin, päivätilastojen ja aggregoitujen ohitusten taulut. Se ei luo havaintorivien historiataulua.
+Varmista, että `0001_initial.sql` ja `0002_aircraft_metadata.sql` näkyvät
+onnistuneesti ajettuina. Jälkimmäinen lisää ICAO-tunnuksella yhdistettävän
+konemetatiedon, eikä muuta tai poista olemassa olevia ohituksia. Migraatiot
+luovat vain vastaanottimen uusimman snapshotin, konemetatiedot,
+päivätilastot ja aggregoidut ohitukset. Ne eivät luo havaintorivien
+historiataulua.
 
 ## 3. Lisää Worker-secret
 
@@ -146,6 +151,36 @@ systemctl list-timers skyscope-exporter.timer --no-pager
 
 Service suorittaa yhden lähetyksen. Timer käynnistää sen 30 sekunnin välein, joten päällekkäisiä jatkuvia Python-prosesseja ei synny.
 
+Exporter välittää readsb:n paikallisesta konetietokannasta vain seuraavat
+konetta kuvaavat julkiset kentät, jos ne ovat saatavilla: rekisteritunnus,
+tyyppikoodi, tyypin kuvaus, operaattori/omistaja ja tieto siitä, onko kone
+tietokannassa merkitty sotilaskoneeksi. Muita `dbFlags`-bittejä ei lähetetä.
+SkyScope näyttää korkeuden metreinä ja nopeuden kilometreinä tunnissa,
+vaikka readsb:n alkuperäiset arvot säilyvät rajapinnassa jalkoina ja
+solmuina.
+
+Tarkista tarvittaessa Pi:llä, että readsb tarjoaa metatiedot:
+
+```sh
+jq '[.aircraft[] | {
+  icao: .hex,
+  callsign: .flight,
+  registration: .r,
+  type_code: .t,
+  type_description: .desc,
+  owner_operator: .ownOp,
+  db_flags: .dbFlags
+} | select(
+  .registration != null
+  or .type_code != null
+  or .owner_operator != null
+)] | .[:5]' /run/readsb/aircraft.json
+```
+
+Tyhjä lista tarkoittaa yleensä, ettei juuri sillä hetkellä kuulla
+metatietoja sisältävää konetta. Sotilaskonemerkintä on tietokannan luokitus,
+ei varma tunnistus, eikä kaikkia sotilaskoneita nähdä ADS-B:llä.
+
 ## 9. Testipyynnöt
 
 Korvaa alla `WORKER_ORIGIN` käyttöönotetulla Worker-originilla.
@@ -217,6 +252,13 @@ sudo -u noel test -r /home/noel/skyscope/skyscope.db
 ### Kone näkyy ilman sijaintia
 
 Tämä on sallittu tila. readsb voi kuulla ICAO-tunnuksen, vaikka koordinaatteja ei ole vielä saatu. Kone näytetään erillisessä listassa eikä sille lasketa etäisyyttä.
+
+### Koneen malli tai operaattori puuttuu
+
+Metatieto tulee readsb:n paikallisesta konetietokannasta. Kaikille ICAO-
+tunnuksille ei ole rekisteriä, tyyppiä tai operaattoria, jolloin SkyScope
+jättää puuttuvan tiedon näyttämättä. Jo tallennetut ohitukset rikastuvat
+automaattisesti, jos sama ICAO-tunnus havaitaan myöhemmin metatietojen kanssa.
 
 ## 11. Tokenin turvallinen vaihtaminen
 

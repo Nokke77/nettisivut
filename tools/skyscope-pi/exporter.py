@@ -100,6 +100,18 @@ def normalize_callsign(value: Any) -> str | None:
     return normalized[:16] or None
 
 
+def normalize_metadata_text(
+    value: Any, maximum_length: int, *, uppercase: bool = False
+) -> str | None:
+    """Normalize optional readsb aircraft-database text without inventing data."""
+    if not isinstance(value, str):
+        return None
+    normalized = " ".join(value.strip().split())
+    if uppercase:
+        normalized = normalized.upper()
+    return normalized[:maximum_length] or None
+
+
 def valid_position(latitude: float | None, longitude: float | None) -> bool:
     return (
         latitude is not None
@@ -146,9 +158,15 @@ def build_current_aircraft(
         altitude = optional_number(raw.get("alt_baro"))
         if altitude is None:
             altitude = optional_number(raw.get("alt_geom"))
+        db_flags = optional_integer(raw.get("dbFlags"))
         aircraft.append({
             "icao": icao,
             "callsign": normalize_callsign(raw.get("flight")),
+            "registration": normalize_metadata_text(raw.get("r"), 32, uppercase=True),
+            "type_code": normalize_metadata_text(raw.get("t"), 16, uppercase=True),
+            "type_description": normalize_metadata_text(raw.get("desc"), 128),
+            "owner_operator": normalize_metadata_text(raw.get("ownOp"), 160),
+            "is_military": bool(db_flags & 1) if db_flags is not None else None,
             "latitude": latitude,
             "longitude": longitude,
             "altitude_ft": altitude,
