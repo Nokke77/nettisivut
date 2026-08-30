@@ -1,3 +1,3 @@
 window.SKYSCOPE_CONFIG = Object.freeze({
-  apiBaseUrl: ""
+  apiBaseUrl: "https://skyscope-api.noeljeromaa.workers.dev"
 });

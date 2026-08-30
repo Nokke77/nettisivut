@@ -16,7 +16,7 @@ Tarvitset Cloudflare-tilin, Node.js:n ja npm:n sillä tietokoneella, jolta Worke
 
 ```sh
 cd backend/skyscope-worker
-npx --yes wrangler@4.102.0 login
+npx --yes wrangler@4.127.1 login
 ```
 
 Älä jatka, ellei kirjautuminen pääty oikealle Cloudflare-tilille.
@@ -24,7 +24,7 @@ npx --yes wrangler@4.102.0 login
 ## 1. Luo Cloudflare D1 -tietokanta
 
 ```sh
-npx --yes wrangler@4.102.0 d1 create skyscope
+npx --yes wrangler@4.127.1 d1 create skyscope
 ```
 
 Komento tulostaa tietokannan UUID-tunnuksen. Korvaa `wrangler.toml`-tiedoston arvo
@@ -37,8 +37,8 @@ Tietokannan UUID ei ole salasana, mutta sitä ei pidä keksiä tai kopioida tois
 Tarkista ensin odottava migraatio ja aja se sitten etätietokantaan:
 
 ```sh
-npx --yes wrangler@4.102.0 d1 migrations list skyscope --remote
-npx --yes wrangler@4.102.0 d1 migrations apply skyscope --remote
+npx --yes wrangler@4.127.1 d1 migrations list skyscope --remote
+npx --yes wrangler@4.127.1 d1 migrations apply skyscope --remote
 ```
 
 Varmista, että `0001_initial.sql` näkyy onnistuneesti ajettuna. Migraatio luo vain vastaanottimen uusimman snapshotin, päivätilastojen ja aggregoitujen ohitusten taulut. Se ei luo havaintorivien historiataulua.
@@ -54,7 +54,7 @@ python3 -c 'import secrets; print(secrets.token_urlsafe(48))'
 Tallenna token heti turvalliseen salaisuuksien hallintaan. Lisää se Workerille interaktiivisesti:
 
 ```sh
-npx --yes wrangler@4.102.0 secret put INGEST_TOKEN
+npx --yes wrangler@4.127.1 secret put INGEST_TOKEN
 ```
 
 Liitä token kehotteeseen. Älä kirjoita tokenia `wrangler.toml`-tiedostoon, komentohistoriaan, Git-repositorioon tai selaimen `config.js`-tiedostoon. Cloudflaren `secret put` voi luoda Workerista version; varsinainen vahvistettu deploy tehdään seuraavassa vaiheessa.
@@ -71,7 +71,7 @@ Tarkista ensin `wrangler.toml`:
 Deployaa sitten:
 
 ```sh
-npx --yes wrangler@4.102.0 deploy
+npx --yes wrangler@4.127.1 deploy
 ```
 
 Ota talteen komennon tulostama HTTPS-osoite, esimerkiksi
@@ -222,7 +222,7 @@ Tämä on sallittu tila. readsb voi kuulla ICAO-tunnuksen, vaikka koordinaatteja
 1. Luo uusi token samalla `secrets.token_urlsafe(48)`-komennolla.
 2. Pysäytä Pi:n timer lyhyesti: `sudo systemctl stop skyscope-exporter.timer`.
 3. Päivitä uusi token Pi:n `/etc/skyscope/exporter.env`-tiedostoon ja säilytä oikeudet `0600`.
-4. Aja Worker-hakemistossa `npx --yes wrangler@4.102.0 secret put INGEST_TOKEN` ja syötä uusi token interaktiivisesti.
+4. Aja Worker-hakemistossa `npx --yes wrangler@4.127.1 secret put INGEST_TOKEN` ja syötä uusi token interaktiivisesti.
 5. Käynnistä ja testaa yksi lähetys: `sudo systemctl start skyscope-exporter.service`.
 6. Tarkista service-loki ja `/api/status`.
 7. Käynnistä timer uudelleen: `sudo systemctl enable --now skyscope-exporter.timer`.

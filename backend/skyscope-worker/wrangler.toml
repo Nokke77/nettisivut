@@ -2,6 +2,7 @@ name = "skyscope-api"
 main = "src/worker.js"
 compatibility_date = "2026-08-30"
 workers_dev = true
+preview_urls = false
 
 [vars]
 PRODUCTION_ORIGIN = "https://noeljeromaa.com"
@@ -16,5 +17,5 @@ required = ["INGEST_TOKEN"]
 [[d1_databases]]
 binding = "DB"
 database_name = "skyscope"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "5c3b7607-2a14-4ff0-ac55-12a55df2cd17"
 migrations_dir = "migrations"
