@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SkyScope näyttää Noel Jeromaan ADS-B-vastaanottimen kuulemat lentokoneet ja viimeisimmät ohitukset.">
+    <meta name="theme-color" content="#07070b">
+    <title>SkyScope | Noel Jeromaa</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="skyscope.css">
+  </head>
+  <body class="skyscope-page">
+    <header class="site-header">
+      <div class="nav-wrap">
+        <a class="brand" href="../index.html">Noel Jeromaa</a>
+        <nav class="site-nav" aria-label="Päänavigaatio">
+          <a href="../index.html">Etusivu</a>
+          <a href="../tietoaminusta.html">Tietoa minusta</a>
+          <a href="../yhteystiedot.html">Yhteystiedot</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <header class="page-hero skyscope-hero">
+        <div class="page-hero-inner">
+          <p class="eyebrow">ADS-B-vastaanotin</p>
+          <h1 class="page-title">SkyScope</h1>
+          <p class="skyscope-lead">Lähitaivaan liikenne oman vastaanottimen kuulemana.</p>
+        </div>
+      </header>
+
+      <div class="content skyscope-content">
+        <section class="skyscope-status card" aria-labelledby="receiver-heading">
+          <div>
+            <p class="skyscope-section-label">Vastaanotin</p>
+            <h2 id="receiver-heading">Yhteyden tila</h2>
+          </div>
+          <div class="receiver-summary" aria-live="polite">
+            <span class="status-badge" data-status-badge data-state="disconnected">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span data-status-label>Ei yhdistetty</span>
+            </span>
+            <p class="status-time">Viimeisin päivitys: <time data-last-update>–</time></p>
+          </div>
+          <p class="connection-notice" data-connection-notice>
+            SkyScope ei ole vielä yhdistetty. API-osoite lisätään käyttöönoton yhteydessä.
+          </p>
+        </section>
+
+        <section aria-labelledby="today-heading">
+          <div class="section-heading">
+            <div>
+              <p class="skyscope-section-label">Tänään</p>
+              <h2 id="today-heading">Päivän tilanne</h2>
+            </div>
+            <time class="section-date" data-stats-date>–</time>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span class="stat-value" data-unique-aircraft>–</span>
+              <span class="stat-label">Yksilöllistä konetta</span>
+            </article>
+            <article class="stat-card">
+              <span class="stat-value" data-pass-count>–</span>
+              <span class="stat-label">Ohitusta</span>
+            </article>
+            <article class="stat-card stat-card-wide">
+              <span class="stat-value stat-value-small" data-closest-aircraft>–</span>
+              <span class="stat-label" data-closest-detail>Päivän lähin havainto</span>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="live-heading">
+          <div class="section-heading">
+            <div>
+              <p class="skyscope-section-label">Juuri nyt</p>
+              <h2 id="live-heading">Kuullut lentokoneet</h2>
+            </div>
+            <span class="section-count" data-live-count>0 konetta</span>
+          </div>
+
+          <div class="aircraft-group card">
+            <div class="aircraft-group-heading">
+              <h3>Sijainti saatavilla</h3>
+              <span data-position-count>0</span>
+            </div>
+            <div class="aircraft-list" data-aircraft-with-position>
+              <p class="empty-state">Ei sijaintihavaintoja.</p>
+            </div>
+          </div>
+
+          <div class="aircraft-group card">
+            <div class="aircraft-group-heading">
+              <h3>Ilman sijaintia</h3>
+              <span data-no-position-count>0</span>
+            </div>
+            <div class="aircraft-list" data-aircraft-without-position>
+              <p class="empty-state">Ei sijaintitiedottomia havaintoja.</p>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="passes-heading">
+          <div class="section-heading">
+            <div>
+              <p class="skyscope-section-label">Historia</p>
+              <h2 id="passes-heading">Viimeisimmät ohitukset</h2>
+            </div>
+          </div>
+          <div class="passes-list" data-passes-list>
+            <p class="empty-state card">Ohituksia ei ole vielä saatavilla.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>© 2026 Noel Jeromaa</p>
+        <p>Kaikki oikeudet pidätetään</p>
+      </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script type="module" src="skyscope.js"></script>
+  </body>
+</html>

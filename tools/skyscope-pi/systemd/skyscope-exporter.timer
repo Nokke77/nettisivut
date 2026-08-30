@@ -1,0 +1,12 @@
+[Unit]
+Description=Send a SkyScope snapshot every 30 seconds
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+AccuracySec=1s
+Persistent=true
+Unit=skyscope-exporter.service
+
+[Install]
+WantedBy=timers.target

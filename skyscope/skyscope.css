@@ -1,0 +1,323 @@
+.skyscope-page .skyscope-hero .page-hero-inner {
+  padding-top: clamp(64px, 8vw, 108px);
+  padding-bottom: clamp(64px, 8vw, 108px);
+}
+
+.skyscope-page .skyscope-lead {
+  max-width: 620px;
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.skyscope-page .skyscope-content {
+  display: grid;
+  gap: 56px;
+}
+
+.skyscope-page .skyscope-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.skyscope-page .skyscope-status h2,
+.skyscope-page .section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.skyscope-page .skyscope-section-label {
+  margin: 0 0 8px;
+  color: #ffc274;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.skyscope-page .receiver-summary {
+  display: grid;
+  justify-items: end;
+  gap: 9px;
+}
+
+.skyscope-page .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.skyscope-page .status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8f8794;
+  box-shadow: 0 0 0 4px rgba(143, 135, 148, 0.12);
+}
+
+.skyscope-page .status-badge[data-state="online"] .status-dot {
+  background: #6fd8a0;
+  box-shadow: 0 0 0 4px rgba(111, 216, 160, 0.14), 0 0 18px rgba(111, 216, 160, 0.5);
+}
+
+.skyscope-page .status-badge[data-state="stale"] .status-dot {
+  background: #ffc274;
+  box-shadow: 0 0 0 4px rgba(255, 194, 116, 0.14), 0 0 18px rgba(255, 194, 116, 0.4);
+}
+
+.skyscope-page .status-badge[data-state="offline"] .status-dot {
+  background: #ff6b72;
+  box-shadow: 0 0 0 4px rgba(255, 107, 114, 0.14);
+}
+
+.skyscope-page .status-time,
+.skyscope-page .connection-notice {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.skyscope-page .connection-notice {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 194, 116, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 194, 116, 0.07);
+}
+
+.skyscope-page .connection-notice[hidden] {
+  display: none;
+}
+
+.skyscope-page .section-heading,
+.skyscope-page .aircraft-group-heading,
+.skyscope-page .aircraft-title-row,
+.skyscope-page .pass-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.skyscope-page .section-heading {
+  margin-bottom: 20px;
+}
+
+.skyscope-page .section-date,
+.skyscope-page .section-count,
+.skyscope-page .aircraft-group-heading span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.skyscope-page .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.skyscope-page .stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.skyscope-page .stat-card-wide {
+  grid-column: span 2;
+}
+
+.skyscope-page .stat-value {
+  font-size: clamp(2.5rem, 6vw, 4.1rem);
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.skyscope-page .stat-value-small {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.skyscope-page .stat-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.skyscope-page .aircraft-group + .aircraft-group {
+  margin-top: 18px;
+}
+
+.skyscope-page .aircraft-group-heading {
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.skyscope-page .aircraft-group-heading h3,
+.skyscope-page .aircraft-title-row h4 {
+  margin: 0;
+}
+
+.skyscope-page .aircraft-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.skyscope-page .aircraft-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.skyscope-page .aircraft-title-row {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.skyscope-page .aircraft-title-row h4 {
+  overflow: hidden;
+  font-size: 1.13rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skyscope-page .icao-code {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #ffc274;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.skyscope-page .aircraft-metrics,
+.skyscope-page .pass-timeline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.skyscope-page .aircraft-metric {
+  min-width: 0;
+}
+
+.skyscope-page .aircraft-metric dt {
+  color: #8f8794;
+  font-size: 0.73rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.skyscope-page .aircraft-metric dd {
+  margin: 3px 0 0;
+  color: var(--text);
+  font-size: 0.94rem;
+  font-weight: 750;
+}
+
+.skyscope-page .passes-list {
+  display: grid;
+  gap: 16px;
+}
+
+.skyscope-page .pass-card {
+  padding: clamp(22px, 4vw, 32px);
+}
+
+.skyscope-page .pass-title-row {
+  align-items: center;
+}
+
+.skyscope-page .pass-callsign {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.skyscope-page .pass-title-row h3 {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+
+.skyscope-page .pass-distance {
+  color: #ffc274;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.skyscope-page .pass-timeline {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.skyscope-page .empty-state {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+}
+
+.skyscope-page .passes-list > .empty-state {
+  padding: 28px;
+}
+
+@media (max-width: 760px) {
+  .skyscope-page .skyscope-status,
+  .skyscope-page .stats-grid,
+  .skyscope-page .aircraft-list {
+    grid-template-columns: 1fr;
+  }
+
+  .skyscope-page .receiver-summary {
+    justify-items: start;
+  }
+
+  .skyscope-page .stat-card-wide {
+    grid-column: auto;
+  }
+
+  .skyscope-page .stat-card {
+    min-height: 126px;
+  }
+
+  .skyscope-page .section-heading,
+  .skyscope-page .pass-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .skyscope-page .pass-timeline {
+    grid-template-columns: 1fr;
+  }
+}

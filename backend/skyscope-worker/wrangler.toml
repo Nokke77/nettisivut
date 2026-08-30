@@ -1,0 +1,20 @@
+name = "skyscope-api"
+main = "src/worker.js"
+compatibility_date = "2026-08-30"
+workers_dev = true
+
+[vars]
+PRODUCTION_ORIGIN = "https://noeljeromaa.com"
+LOCAL_DEV_ORIGIN = "http://localhost:8000"
+ONLINE_AFTER_SECONDS = "90"
+OFFLINE_AFTER_SECONDS = "300"
+MAX_PUBLIC_PASSES = "50"
+
+[secrets]
+required = ["INGEST_TOKEN"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "skyscope"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
