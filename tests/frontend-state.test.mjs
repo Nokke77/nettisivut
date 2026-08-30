@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { deriveReceiverState, hasValidPosition } from "../skyscope/state.mjs";
+import { deriveReceiverState, formatDateTime, hasValidPosition } from "../skyscope/state.mjs";
 
 const now = Date.parse("2026-08-30T10:10:00Z");
 
@@ -25,4 +25,10 @@ test("receiver is offline after the offline window", () => {
 test("missing coordinates are not interpreted as a zero-zero position", () => {
   assert.equal(hasValidPosition({ latitude: null, longitude: null }), false);
   assert.equal(hasValidPosition({ latitude: 0, longitude: 0 }), true);
+});
+
+test("missing closest timestamp is not formatted as the Unix epoch", () => {
+  assert.equal(formatDateTime(null), "–");
+  assert.equal(formatDateTime(undefined), "–");
+  assert.equal(formatDateTime(""), "–");
 });

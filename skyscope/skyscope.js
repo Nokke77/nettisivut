@@ -1,4 +1,9 @@
-import { deriveReceiverState, hasValidPosition, receiverStateLabels } from "./state.mjs";
+import {
+  deriveReceiverState,
+  formatDateTime,
+  hasValidPosition,
+  receiverStateLabels
+} from "./state.mjs";
 
 const POLL_INTERVAL_MS = 30_000;
 const configuredApiBase = window.SKYSCOPE_CONFIG?.apiBaseUrl?.trim() || "";
@@ -26,15 +31,6 @@ const viewState = {
   data: null,
   requestFailed: false
 };
-
-function formatDateTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "–";
-  return new Intl.DateTimeFormat("fi-FI", {
-    dateStyle: "short",
-    timeStyle: "medium"
-  }).format(date);
-}
 
 function formatDate(value) {
   if (!value) return "–";

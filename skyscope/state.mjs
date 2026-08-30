@@ -1,6 +1,16 @@
 export const DEFAULT_ONLINE_AFTER_MS = 90_000;
 export const DEFAULT_OFFLINE_AFTER_MS = 300_000;
 
+export function formatDateTime(value, locale = "fi-FI") {
+  if (value === null || value === undefined || value === "") return "–";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "–";
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "medium"
+  }).format(date);
+}
+
 export function deriveReceiverState({
   lastReceivedAt,
   requestFailed = false,
