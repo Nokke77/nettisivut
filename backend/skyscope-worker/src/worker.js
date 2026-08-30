@@ -241,6 +241,19 @@ async function handleIngest(request, env, origin) {
           ELSE passes.closest_at
         END,
         updated_at = excluded.updated_at
+      WHERE excluded.first_seen < passes.first_seen
+        OR excluded.last_seen > passes.last_seen
+        OR (
+          excluded.callsign IS NOT NULL
+          AND excluded.callsign IS NOT passes.callsign
+        )
+        OR (
+          excluded.closest_distance_km IS NOT NULL
+          AND (
+            passes.closest_distance_km IS NULL
+            OR excluded.closest_distance_km < passes.closest_distance_km
+          )
+        )
     `).bind(
       pass.id,
       pass.icao,
@@ -265,6 +278,14 @@ async function handleIngest(request, env, origin) {
         closest_at = excluded.closest_at,
         updated_at = excluded.updated_at
       WHERE excluded.updated_at >= daily_stats.updated_at
+        AND (
+          excluded.unique_aircraft_count IS NOT daily_stats.unique_aircraft_count
+          OR excluded.pass_count IS NOT daily_stats.pass_count
+          OR excluded.closest_icao IS NOT daily_stats.closest_icao
+          OR excluded.closest_callsign IS NOT daily_stats.closest_callsign
+          OR excluded.closest_distance_km IS NOT daily_stats.closest_distance_km
+          OR excluded.closest_at IS NOT daily_stats.closest_at
+        )
     `).bind(
       payload.stats.date,
       payload.stats.unique_aircraft_count,
