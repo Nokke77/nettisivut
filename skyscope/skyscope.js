@@ -24,7 +24,6 @@ const elements = {
   lastUpdate: document.querySelector("[data-last-update]"),
   connectionNotice: document.querySelector("[data-connection-notice]"),
   statsDate: document.querySelector("[data-stats-date]"),
-  selectedDate: document.querySelector("[data-selected-date]"),
   uniqueAircraft: document.querySelector("[data-unique-aircraft]"),
   passCount: document.querySelector("[data-pass-count]"),
   closestAircraft: document.querySelector("[data-closest-aircraft]"),
@@ -46,9 +45,6 @@ const viewState = {
 };
 
 let refreshSequence = 0;
-
-elements.selectedDate.value = viewState.selectedDate;
-elements.selectedDate.max = viewState.selectedDate;
 
 function formatDate(value) {
   if (!value) return "–";
@@ -360,12 +356,6 @@ async function refresh() {
   }
   render();
 }
-
-elements.selectedDate.addEventListener("change", () => {
-  if (!elements.selectedDate.value) return;
-  viewState.selectedDate = elements.selectedDate.value;
-  refresh();
-});
 
 refresh();
 window.setInterval(refresh, POLL_INTERVAL_MS);

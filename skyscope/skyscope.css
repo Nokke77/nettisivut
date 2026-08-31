@@ -122,37 +122,10 @@
   font-weight: 700;
 }
 
-.skyscope-page .day-selection,
 .skyscope-page .passes-heading-meta {
   display: grid;
   justify-items: end;
   gap: 6px;
-}
-
-.skyscope-page .day-selection label {
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.skyscope-page .day-selection input {
-  min-height: 40px;
-  padding: 8px 11px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--text);
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 750;
-  color-scheme: dark;
-}
-
-.skyscope-page .day-selection input:focus-visible {
-  outline: 2px solid #ffc274;
-  outline-offset: 2px;
 }
 
 .skyscope-page .stats-grid {
@@ -438,7 +411,6 @@
     gap: 10px;
   }
 
-  .skyscope-page .day-selection,
   .skyscope-page .passes-heading-meta {
     justify-items: start;
   }
