@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import worker from "../src/worker.js";
+import worker, { helsinkiDateRange } from "../src/worker.js";
 
 const initialMigration = readFileSync(
   new URL("../migrations/0001_initial.sql", import.meta.url),
@@ -12,7 +12,11 @@ const metadataMigration = readFileSync(
   new URL("../migrations/0002_aircraft_metadata.sql", import.meta.url),
   "utf8"
 );
-const migration = `${initialMigration}\n${metadataMigration}`;
+const passDetailsMigration = readFileSync(
+  new URL("../migrations/0003_pass_altitudes_and_date_index.sql", import.meta.url),
+  "utf8"
+);
+const migration = `${initialMigration}\n${metadataMigration}\n${passDetailsMigration}`;
 
 class SqliteStatement {
   constructor(database, sql) {
@@ -86,7 +90,8 @@ const basePayload = {
   passes: [{
     id: passId, icao: "ABC123", callsign: "FIN123",
     first_seen: "2026-08-30T09:45:00Z", last_seen: "2026-08-30T10:00:00Z",
-    closest_distance_km: 10.5, closest_at: "2026-08-30T09:55:00Z"
+    closest_distance_km: 10.5, closest_at: "2026-08-30T09:55:00Z",
+    min_altitude_ft: 9000, max_altitude_ft: 12000
   }],
   stats: {
     date: "2026-08-30", unique_aircraft_count: 1, pass_count: 1,
@@ -134,7 +139,7 @@ function metadataRow(database) {
   return database.row("SELECT * FROM aircraft_metadata WHERE icao = ?", "ABC123");
 }
 
-test("metadata migration preserves existing production tables and rows", () => {
+test("additive migrations preserve existing production tables and rows", () => {
   const sqlite = new DatabaseSync(":memory:");
   try {
     sqlite.exec(initialMigration);
@@ -155,9 +160,23 @@ test("metadata migration preserves existing production tables and rows", () => {
     );
 
     sqlite.exec(metadataMigration);
+    sqlite.exec(passDetailsMigration);
 
     assert.equal(
       sqlite.prepare("SELECT COUNT(*) AS count FROM passes").get().count,
+      1
+    );
+    const altitudeColumns = sqlite.prepare(
+      "SELECT min_altitude_ft, max_altitude_ft FROM passes WHERE id = ?"
+    ).get(passId);
+    assert.equal(altitudeColumns.min_altitude_ft, null);
+    assert.equal(altitudeColumns.max_altitude_ft, null);
+    assert.equal(
+      sqlite.prepare(`
+        SELECT COUNT(*) AS count
+        FROM sqlite_master
+        WHERE type = 'index' AND name = 'idx_passes_first_seen_id'
+      `).get().count,
       1
     );
     assert.equal(
@@ -447,4 +466,125 @@ test("pass and daily-stat APIs join aircraft identity metadata", async (t) => {
   assert.equal(passes.passes[0].is_military, false);
   assert.equal(stats.closest_aircraft.type_description, "ATR 72-500");
   assert.equal(stats.closest_aircraft.owner_operator, "Finnair Oyj");
+});
+
+test("pass altitude range only expands when new observations improve it", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  await ingest(database, clonePayload());
+  const originalUpdatedAt = passRow(database).updated_at;
+  const unchanged = clonePayload();
+  unchanged.captured_at = "2026-08-30T10:05:00Z";
+  unchanged.stats = clonePayload().stats;
+  await ingest(database, unchanged);
+  assert.equal(passRow(database).updated_at, originalUpdatedAt);
+
+  const expanded = clonePayload();
+  expanded.captured_at = "2026-08-30T10:10:00Z";
+  expanded.passes[0].min_altitude_ft = 8000;
+  expanded.passes[0].max_altitude_ft = 13000;
+  const changesBeforeExpansion = database.totalChanges();
+  await ingest(database, expanded);
+
+  assert.equal(database.totalChanges() - changesBeforeExpansion, 2);
+  assert.equal(passRow(database).min_altitude_ft, 8000);
+  assert.equal(passRow(database).max_altitude_ft, 13000);
+});
+
+test("Helsinki day boundaries account for daylight-saving changes", () => {
+  assert.deepEqual(helsinkiDateRange("2026-03-29"), {
+    start: "2026-03-28T22:00:00.000Z",
+    end: "2026-03-29T21:00:00.000Z"
+  });
+  assert.deepEqual(helsinkiDateRange("2026-10-25"), {
+    start: "2026-10-24T21:00:00.000Z",
+    end: "2026-10-25T22:00:00.000Z"
+  });
+});
+
+test("date-filtered pass API paginates the entire selected Helsinki day", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  const insert = database.sqlite.prepare(`
+    INSERT INTO passes (
+      id, icao, callsign, first_seen, last_seen,
+      closest_distance_km, closest_at, min_altitude_ft,
+      max_altitude_ft, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (let index = 0; index < 125; index += 1) {
+    const id = index.toString(16).padStart(64, "0");
+    insert.run(
+      id, "ABC123", `FIN${index}`,
+      "2026-08-30T10:00:00.000Z", "2026-08-30T10:05:00.000Z",
+      10, "2026-08-30T10:03:00.000Z", 9000, 12000,
+      "2026-08-30T10:05:00.000Z"
+    );
+  }
+  insert.run(
+    "f".repeat(64), "OUT123", "OUT1",
+    "2026-08-29T20:59:59.000Z", "2026-08-29T21:00:00.000Z",
+    null, null, null, null, "2026-08-29T21:00:00.000Z"
+  );
+
+  const defaultPageResponse = await worker.fetch(
+    new Request("https://api.example.test/api/passes?date=2026-08-30"),
+    environment(database)
+  );
+  const defaultPage = await defaultPageResponse.json();
+  assert.equal(defaultPage.passes.length, 100);
+  assert.equal(typeof defaultPage.next_cursor, "string");
+
+  const collected = [];
+  let cursor = null;
+  do {
+    const search = new URLSearchParams({ date: "2026-08-30", limit: "50" });
+    if (cursor) search.set("cursor", cursor);
+    const response = await worker.fetch(
+      new Request(`https://api.example.test/api/passes?${search}`),
+      environment(database)
+    );
+    assert.equal(response.status, 200);
+    const page = await response.json();
+    collected.push(...page.passes);
+    cursor = page.next_cursor;
+  } while (cursor);
+
+  assert.equal(collected.length, 125);
+  assert.equal(new Set(collected.map((pass) => pass.id)).size, 125);
+  assert.equal(collected.some((pass) => pass.icao === "OUT123"), false);
+  assert.equal(collected[0].min_altitude_ft, 9000);
+});
+
+test("date-filtered pass API rejects invalid dates and cursors", async (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  const env = environment(database);
+
+  const invalidDate = await worker.fetch(
+    new Request("https://api.example.test/api/passes?date=2026-02-30"), env
+  );
+  const invalidCursor = await worker.fetch(
+    new Request("https://api.example.test/api/passes?date=2026-08-30&cursor=not-valid"), env
+  );
+
+  assert.equal(invalidDate.status, 400);
+  assert.equal(invalidCursor.status, 400);
+});
+
+test("selected-day pass query uses the dedicated first_seen index", (t) => {
+  const database = new SqliteD1();
+  t.after(() => database.close());
+  const plan = database.sqlite.prepare(`
+    EXPLAIN QUERY PLAN
+    SELECT id FROM passes
+    WHERE first_seen >= ? AND first_seen < ?
+    ORDER BY first_seen DESC, id DESC
+    LIMIT ?
+  `).all("2026-08-29T21:00:00.000Z", "2026-08-30T21:00:00.000Z", 101);
+
+  assert.equal(
+    plan.some((step) => step.detail.includes("idx_passes_first_seen_id")),
+    true
+  );
 });

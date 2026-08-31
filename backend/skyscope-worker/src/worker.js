@@ -1,8 +1,22 @@
 const MAX_REQUEST_BYTES = 512 * 1024;
 const MAX_AIRCRAFT = 250;
 const MAX_PASSES_PER_INGEST = 100;
+const MAX_PUBLIC_PASS_PAGE_SIZE = 100;
+const PUBLIC_TIME_ZONE = "Europe/Helsinki";
+
+const helsinkiDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: PUBLIC_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23"
+});
 
 function numberSetting(value, fallback, minimum, maximum) {
+  if (value === null || value === undefined || value === "") return fallback;
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(maximum, Math.max(minimum, Math.trunc(parsed)));
@@ -98,6 +112,101 @@ function isoTimestamp(value, label) {
   return new Date(timestamp).toISOString();
 }
 
+function validCalendarDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
+}
+
+function dateTimePartsAt(instant) {
+  return Object.fromEntries(
+    helsinkiDateTimeFormatter.formatToParts(instant)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)])
+  );
+}
+
+function helsinkiOffsetMilliseconds(epochMilliseconds) {
+  const instant = new Date(epochMilliseconds);
+  const parts = dateTimePartsAt(instant);
+  const representedAsUtc = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second
+  );
+  return representedAsUtc - Math.trunc(epochMilliseconds / 1000) * 1000;
+}
+
+function helsinkiMidnightUtc(dateString) {
+  if (!validCalendarDate(dateString)) throw new TypeError("Invalid date");
+  const [year, month, day] = dateString.split("-").map(Number);
+  const localWallTime = Date.UTC(year, month - 1, day);
+  let epochMilliseconds = localWallTime;
+  for (let index = 0; index < 3; index += 1) {
+    epochMilliseconds = localWallTime - helsinkiOffsetMilliseconds(epochMilliseconds);
+  }
+  const parts = dateTimePartsAt(new Date(epochMilliseconds));
+  if (
+    parts.year !== year
+    || parts.month !== month
+    || parts.day !== day
+    || parts.hour !== 0
+    || parts.minute !== 0
+    || parts.second !== 0
+  ) {
+    throw new TypeError("Invalid date");
+  }
+  return new Date(epochMilliseconds).toISOString();
+}
+
+function nextCalendarDate(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const next = new Date(Date.UTC(year, month - 1, day + 1));
+  return [
+    String(next.getUTCFullYear()).padStart(4, "0"),
+    String(next.getUTCMonth() + 1).padStart(2, "0"),
+    String(next.getUTCDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function helsinkiDateRange(dateString) {
+  return {
+    start: helsinkiMidnightUtc(dateString),
+    end: helsinkiMidnightUtc(nextCalendarDate(dateString))
+  };
+}
+
+function encodePassCursor(pass) {
+  return btoa(JSON.stringify([pass.first_seen, pass.id]))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function decodePassCursor(value) {
+  if (typeof value !== "string" || !value || value.length > 256 || !/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new TypeError("Invalid cursor");
+  }
+  try {
+    const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+    const decoded = JSON.parse(atob(base64 + padding));
+    if (!Array.isArray(decoded) || decoded.length !== 2) throw new TypeError("Invalid cursor");
+    const firstSeen = isoTimestamp(decoded[0], "cursor timestamp");
+    const id = requiredString(decoded[1], "cursor id", 64).toLowerCase();
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new TypeError("Invalid cursor");
+    return { firstSeen, id };
+  } catch {
+    throw new TypeError("Invalid cursor");
+  }
+}
+
 function icao(value, label = "icao") {
   const normalized = requiredString(value, label, 16).toUpperCase();
   if (!/^~?[A-Z0-9]{2,15}$/.test(normalized)) throw new TypeError(`${label} is invalid`);
@@ -140,15 +249,25 @@ function validatePass(value, index) {
   const item = requiredObject(value, `passes[${index}]`);
   const id = requiredString(item.id, `passes[${index}].id`, 64).toLowerCase();
   if (!/^[a-f0-9]{64}$/.test(id)) throw new TypeError(`passes[${index}].id is invalid`);
-  return {
+  const pass = {
     id,
     icao: icao(item.icao, `passes[${index}].icao`),
     callsign: optionalString(item.callsign, `passes[${index}].callsign`, 16),
     first_seen: isoTimestamp(item.first_seen, `passes[${index}].first_seen`),
     last_seen: isoTimestamp(item.last_seen, `passes[${index}].last_seen`),
     closest_distance_km: boundedNumber(item.closest_distance_km, `passes[${index}].closest_distance_km`, 0, 20000),
-    closest_at: item.closest_at ? isoTimestamp(item.closest_at, `passes[${index}].closest_at`) : null
+    closest_at: item.closest_at ? isoTimestamp(item.closest_at, `passes[${index}].closest_at`) : null,
+    min_altitude_ft: boundedNumber(item.min_altitude_ft, `passes[${index}].min_altitude_ft`, -2000, 100000),
+    max_altitude_ft: boundedNumber(item.max_altitude_ft, `passes[${index}].max_altitude_ft`, -2000, 100000)
   };
+  if (
+    pass.min_altitude_ft !== null
+    && pass.max_altitude_ft !== null
+    && pass.min_altitude_ft > pass.max_altitude_ft
+  ) {
+    throw new TypeError(`passes[${index}] altitude range is invalid`);
+  }
+  return pass;
 }
 
 function validateStats(value) {
@@ -298,8 +417,9 @@ async function handleIngest(request, env, origin) {
     ...payload.passes.map((pass) => env.DB.prepare(`
       INSERT INTO passes (
         id, icao, callsign, first_seen, last_seen,
-        closest_distance_km, closest_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        closest_distance_km, closest_at, min_altitude_ft,
+        max_altitude_ft, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         callsign = COALESCE(excluded.callsign, passes.callsign),
         first_seen = MIN(passes.first_seen, excluded.first_seen),
@@ -316,6 +436,18 @@ async function handleIngest(request, env, origin) {
             THEN excluded.closest_at
           ELSE passes.closest_at
         END,
+        min_altitude_ft = CASE
+          WHEN excluded.min_altitude_ft IS NULL THEN passes.min_altitude_ft
+          WHEN passes.min_altitude_ft IS NULL OR excluded.min_altitude_ft < passes.min_altitude_ft
+            THEN excluded.min_altitude_ft
+          ELSE passes.min_altitude_ft
+        END,
+        max_altitude_ft = CASE
+          WHEN excluded.max_altitude_ft IS NULL THEN passes.max_altitude_ft
+          WHEN passes.max_altitude_ft IS NULL OR excluded.max_altitude_ft > passes.max_altitude_ft
+            THEN excluded.max_altitude_ft
+          ELSE passes.max_altitude_ft
+        END,
         updated_at = excluded.updated_at
       WHERE excluded.first_seen < passes.first_seen
         OR excluded.last_seen > passes.last_seen
@@ -330,6 +462,20 @@ async function handleIngest(request, env, origin) {
             OR excluded.closest_distance_km < passes.closest_distance_km
           )
         )
+        OR (
+          excluded.min_altitude_ft IS NOT NULL
+          AND (
+            passes.min_altitude_ft IS NULL
+            OR excluded.min_altitude_ft < passes.min_altitude_ft
+          )
+        )
+        OR (
+          excluded.max_altitude_ft IS NOT NULL
+          AND (
+            passes.max_altitude_ft IS NULL
+            OR excluded.max_altitude_ft > passes.max_altitude_ft
+          )
+        )
     `).bind(
       pass.id,
       pass.icao,
@@ -338,6 +484,8 @@ async function handleIngest(request, env, origin) {
       pass.last_seen,
       pass.closest_distance_km,
       pass.closest_at,
+      pass.min_altitude_ft,
+      pass.max_altitude_ft,
       receivedAt
     )),
     env.DB.prepare(`
@@ -404,32 +552,91 @@ async function getLive(env, origin) {
   }, 200, origin);
 }
 
-async function getPasses(request, env, origin) {
-  const configuredMaximum = numberSetting(env.MAX_PUBLIC_PASSES, 50, 1, 100);
-  const requested = numberSetting(new URL(request.url).searchParams.get("limit"), configuredMaximum, 1, configuredMaximum);
-  const result = await env.DB.prepare(`
-    SELECT
-      p.id, p.icao, p.callsign, p.first_seen, p.last_seen,
-      p.closest_distance_km, p.closest_at,
-      m.registration, m.type_code, m.type_description,
-      m.owner_operator, m.is_military
-    FROM passes AS p
-    LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
-    ORDER BY p.last_seen DESC
-    LIMIT ?
-  `).bind(requested).all();
-  const passes = (result.results || []).map((pass) => ({
+function publicPass(pass) {
+  return {
     ...pass,
     is_military: pass.is_military === null || pass.is_military === undefined
       ? null
       : Boolean(pass.is_military)
-  }));
-  return jsonResponse({ passes }, 200, origin);
+  };
+}
+
+async function getPasses(request, env, origin) {
+  const searchParams = new URL(request.url).searchParams;
+  const requestedDate = searchParams.get("date");
+
+  if (requestedDate === null) {
+    const configuredMaximum = numberSetting(env.MAX_PUBLIC_PASSES, 50, 1, 100);
+    const requested = numberSetting(searchParams.get("limit"), configuredMaximum, 1, configuredMaximum);
+    const result = await env.DB.prepare(`
+      SELECT
+        p.id, p.icao, p.callsign, p.first_seen, p.last_seen,
+        p.closest_distance_km, p.closest_at,
+        p.min_altitude_ft, p.max_altitude_ft,
+        m.registration, m.type_code, m.type_description,
+        m.owner_operator, m.is_military
+      FROM passes AS p
+      LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
+      ORDER BY p.last_seen DESC
+      LIMIT ?
+    `).bind(requested).all();
+    return jsonResponse({ passes: (result.results || []).map(publicPass) }, 200, origin);
+  }
+
+  if (!validCalendarDate(requestedDate)) {
+    return jsonResponse({ error: "Invalid date" }, 400, origin);
+  }
+
+  let cursor = null;
+  const encodedCursor = searchParams.get("cursor");
+  if (encodedCursor !== null) {
+    try {
+      cursor = decodePassCursor(encodedCursor);
+    } catch {
+      return jsonResponse({ error: "Invalid cursor" }, 400, origin);
+    }
+  }
+
+  const requested = numberSetting(
+    searchParams.get("limit"),
+    MAX_PUBLIC_PASS_PAGE_SIZE,
+    1,
+    MAX_PUBLIC_PASS_PAGE_SIZE
+  );
+  const { start, end } = helsinkiDateRange(requestedDate);
+  const cursorPredicate = cursor
+    ? "AND (p.first_seen < ? OR (p.first_seen = ? AND p.id < ?))"
+    : "";
+  const values = cursor
+    ? [start, end, cursor.firstSeen, cursor.firstSeen, cursor.id, requested + 1]
+    : [start, end, requested + 1];
+  const result = await env.DB.prepare(`
+    SELECT
+      p.id, p.icao, p.callsign, p.first_seen, p.last_seen,
+      p.closest_distance_km, p.closest_at,
+      p.min_altitude_ft, p.max_altitude_ft,
+      m.registration, m.type_code, m.type_description,
+      m.owner_operator, m.is_military
+    FROM passes AS p
+    LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
+    WHERE p.first_seen >= ? AND p.first_seen < ?
+      ${cursorPredicate}
+    ORDER BY p.first_seen DESC, p.id DESC
+    LIMIT ?
+  `).bind(...values).all();
+  const rows = result.results || [];
+  const page = rows.slice(0, requested);
+  return jsonResponse({
+    date: requestedDate,
+    time_zone: PUBLIC_TIME_ZONE,
+    passes: page.map(publicPass),
+    next_cursor: rows.length > requested ? encodePassCursor(page[page.length - 1]) : null
+  }, 200, origin);
 }
 
 async function getStats(request, env, origin) {
   const requestedDate = new URL(request.url).searchParams.get("date");
-  if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+  if (requestedDate && !validCalendarDate(requestedDate)) {
     return jsonResponse({ error: "Invalid date" }, 400, origin);
   }
   const selection = `
@@ -510,4 +717,4 @@ export default {
   }
 };
 
-export { validatePayload };
+export { helsinkiDateRange, validatePayload };

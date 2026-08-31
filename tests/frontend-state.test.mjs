@@ -1,13 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  aircraftOperatorLabel,
   aircraftOwnerLine,
   aircraftTypeLabel,
   deriveReceiverState,
   feetToMetres,
   formatDateTime,
+  formatPassTimeRange,
   hasValidPosition,
-  knotsToKmh
+  helsinkiDate,
+  knotsToKmh,
+  passRouteLabel
 } from "../skyscope/state.mjs";
 
 const now = Date.parse("2026-08-30T10:10:00Z");
@@ -62,4 +66,32 @@ test("aircraft metadata becomes a human-readable identity", () => {
 test("aircraft identity helpers omit missing metadata cleanly", () => {
   assert.equal(aircraftTypeLabel({ type_code: "B738" }), "B738");
   assert.equal(aircraftOwnerLine({}), null);
+});
+
+test("pass time range is explicitly formatted in Europe/Helsinki time", () => {
+  assert.equal(
+    formatPassTimeRange("2026-08-30T02:28:00Z", "2026-08-30T02:34:00Z"),
+    "05.28–05.34"
+  );
+  assert.equal(helsinkiDate("2026-08-29T21:00:00Z"), "2026-08-30");
+});
+
+test("operator display follows the required priority", () => {
+  assert.equal(aircraftOperatorLabel({
+    is_military: true,
+    owner_operator: "Finnair Oyj",
+    callsign: "FIN5ET"
+  }), "Sotilaskone");
+  assert.equal(aircraftOperatorLabel({
+    owner_operator: "Finnair Oyj",
+    callsign: "NOZ123"
+  }), "Finnair");
+  assert.equal(aircraftOperatorLabel({ callsign: "NOZ123" }), "Norwegian");
+  assert.equal(aircraftOperatorLabel({ callsign: "ZZZ123" }), "Tuntematon operaattori");
+});
+
+test("route is shown only when both IATA airports are present", () => {
+  assert.equal(passRouteLabel({ origin_iata: "kpu", destination_iata: "hel" }), "KPU → HEL");
+  assert.equal(passRouteLabel({ origin_iata: "KPU" }), "Reitti ei tiedossa");
+  assert.equal(passRouteLabel({}), "Reitti ei tiedossa");
 });

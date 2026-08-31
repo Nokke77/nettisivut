@@ -69,7 +69,8 @@ class FakeD1 {
       } else if (statement.sql.startsWith("INSERT INTO passes")) {
         this.passes.set(values[0], {
           id: values[0], icao: values[1], callsign: values[2], first_seen: values[3],
-          last_seen: values[4], closest_distance_km: values[5], closest_at: values[6], updated_at: values[7]
+          last_seen: values[4], closest_distance_km: values[5], closest_at: values[6],
+          min_altitude_ft: values[7], max_altitude_ft: values[8], updated_at: values[9]
         });
       } else if (statement.sql.startsWith("INSERT INTO daily_stats")) {
         this.stats.set(values[0], {
@@ -97,7 +98,8 @@ const validPayload = {
   passes: [{
     id: passId, icao: "ABC123", callsign: "FIN123",
     first_seen: "2026-08-30T09:45:00Z", last_seen: "2026-08-30T10:00:00Z",
-    closest_distance_km: 10.5, closest_at: "2026-08-30T09:55:00Z"
+    closest_distance_km: 10.5, closest_at: "2026-08-30T09:55:00Z",
+    min_altitude_ft: 9000, max_altitude_ft: 12000
   }],
   stats: {
     date: "2026-08-30", unique_aircraft_count: 1, pass_count: 1,
@@ -170,6 +172,8 @@ test("ingest remains compatible with the previous exporter payload", async () =>
   ]) {
     delete payload.aircraft[0][field];
   }
+  delete payload.passes[0].min_altitude_ft;
+  delete payload.passes[0].max_altitude_ft;
   const database = new FakeD1();
   const response = await worker.fetch(
     ingestRequest(JSON.stringify(payload)),

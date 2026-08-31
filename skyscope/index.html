@@ -52,10 +52,14 @@
         <section aria-labelledby="today-heading">
           <div class="section-heading">
             <div>
-              <p class="skyscope-section-label">Tänään</p>
+              <p class="skyscope-section-label">Valittu päivä</p>
               <h2 id="today-heading">Päivän tilanne</h2>
             </div>
-            <time class="section-date" data-stats-date>–</time>
+            <div class="day-selection">
+              <label for="skyscope-date">Valitse päivä</label>
+              <input id="skyscope-date" type="date" data-selected-date>
+              <time class="section-date" data-stats-date>–</time>
+            </div>
           </div>
           <div class="stats-grid">
             <article class="stat-card">
@@ -107,7 +111,11 @@
           <div class="section-heading">
             <div>
               <p class="skyscope-section-label">Historia</p>
-              <h2 id="passes-heading">Viimeisimmät ohitukset</h2>
+              <h2 id="passes-heading">Päivän ohitukset</h2>
+            </div>
+            <div class="passes-heading-meta">
+              <time class="section-date" data-passes-date>–</time>
+              <span class="section-count" data-passes-count>0 ohitusta</span>
             </div>
           </div>
           <div class="passes-list" data-passes-list>

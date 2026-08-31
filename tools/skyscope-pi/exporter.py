@@ -39,6 +39,7 @@ class Observation:
     latitude: float | None
     longitude: float | None
     distance_km: float | None
+    altitude_ft: float | None
 
 
 def parse_timestamp(value: Any) -> datetime:
@@ -72,6 +73,20 @@ def optional_integer(value: Any) -> int | None:
     if number is None or number < 0:
         return None
     return int(number)
+
+
+def mapping_value(row: Mapping[str, Any], key: str) -> Any:
+    try:
+        return row[key]
+    except (IndexError, KeyError):
+        return None
+
+
+def optional_altitude(value: Any) -> float | None:
+    altitude = optional_number(value)
+    if altitude is None or altitude < -2000 or altitude > 100000:
+        return None
+    return altitude
 
 
 def haversine_km(latitude_a: float, longitude_a: float, latitude_b: float, longitude_b: float) -> float:
@@ -213,6 +228,7 @@ def observation_from_row(
         latitude=latitude,
         longitude=longitude,
         distance_km=distance,
+        altitude_ft=optional_altitude(mapping_value(row, "altitude_ft")),
     )
 
 
@@ -252,6 +268,10 @@ def group_passes(
             default=None,
         )
         callsign = next((observation.callsign for observation in reversed(group) if observation.callsign), None)
+        altitudes = [
+            observation.altitude_ft for observation in group
+            if observation.altitude_ft is not None
+        ]
         stable_source = f"{first.icao}|{isoformat(first.captured_at)}".encode("utf-8")
         passes.append({
             "id": hashlib.sha256(stable_source).hexdigest(),
@@ -261,9 +281,49 @@ def group_passes(
             "last_seen": isoformat(last.captured_at),
             "closest_distance_km": round(closest.distance_km, 3) if closest else None,
             "closest_at": isoformat(closest.captured_at) if closest else None,
+            "min_altitude_ft": round(min(altitudes), 1) if altitudes else None,
+            "max_altitude_ft": round(max(altitudes), 1) if altitudes else None,
         })
     passes.sort(key=lambda item: item["last_seen"], reverse=True)
     return passes
+
+
+def add_current_altitudes(
+    passes: list[dict[str, Any]], aircraft: Iterable[Mapping[str, Any]]
+) -> None:
+    """Complete the active pass altitude range from the current readsb snapshot."""
+    passes_by_icao: dict[str, list[dict[str, Any]]] = {}
+    for item in passes:
+        passes_by_icao.setdefault(item["icao"], []).append(item)
+
+    for current in aircraft:
+        altitude = optional_altitude(current.get("altitude_ft"))
+        icao = normalize_icao(current.get("icao"))
+        if altitude is None or not icao:
+            continue
+        try:
+            seen_at = parse_timestamp(current.get("seen_at"))
+        except (TypeError, ValueError, OverflowError):
+            continue
+        active_pass = next(
+            (
+                item for item in passes_by_icao.get(icao, [])
+                if parse_timestamp(item["first_seen"]) - PASS_GAP
+                <= seen_at
+                <= parse_timestamp(item["last_seen"]) + PASS_GAP
+            ),
+            None,
+        )
+        if active_pass is None:
+            continue
+        minimum = optional_altitude(active_pass.get("min_altitude_ft"))
+        maximum = optional_altitude(active_pass.get("max_altitude_ft"))
+        active_pass["min_altitude_ft"] = round(
+            altitude if minimum is None else min(minimum, altitude), 1
+        )
+        active_pass["max_altitude_ft"] = round(
+            altitude if maximum is None else max(maximum, altitude), 1
+        )
 
 
 def read_aircraft_json(path: str) -> Mapping[str, Any]:
@@ -281,9 +341,26 @@ def read_observations(path: str, since: datetime) -> list[sqlite3.Row]:
     connection = sqlite3.connect(f"file:{database_path}?mode=ro", uri=True, timeout=5)
     connection.row_factory = sqlite3.Row
     try:
+        columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(observations)")
+        }
+        altitude_column = next(
+            (
+                candidate for candidate in
+                ("altitude_ft", "alt_baro", "alt_geom", "altitude")
+                if candidate in columns
+            ),
+            None,
+        )
+        altitude_selection = (
+            f'"{altitude_column}" AS altitude_ft'
+            if altitude_column
+            else "NULL AS altitude_ft"
+        )
         return connection.execute(
-            """
-            SELECT captured_at, icao, callsign, latitude, longitude
+            f"""
+            SELECT captured_at, icao, callsign, latitude, longitude,
+                   {altitude_selection}
             FROM observations
             WHERE CASE
               WHEN typeof(captured_at) IN ('integer', 'real')
@@ -395,6 +472,7 @@ def build_snapshot(now: datetime | None = None) -> dict[str, Any]:
     captured_at, aircraft = build_current_aircraft(
         read_aircraft_json(aircraft_path), receiver_latitude, receiver_longitude, now
     )
+    add_current_altitudes(passes, aircraft)
     return {
         "schema_version": 1,
         "captured_at": captured_at,

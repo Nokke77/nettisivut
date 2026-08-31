@@ -1,14 +1,50 @@
 export const DEFAULT_ONLINE_AFTER_MS = 90_000;
 export const DEFAULT_OFFLINE_AFTER_MS = 300_000;
+export const DISPLAY_TIME_ZONE = "Europe/Helsinki";
 
-export function formatDateTime(value, locale = "fi-FI") {
+const trustedCallsignOperators = Object.freeze({
+  FIN: "Finnair",
+  NOZ: "Norwegian"
+});
+
+export function formatDateTime(value, locale = "fi-FI", timeZone = DISPLAY_TIME_ZONE) {
   if (value === null || value === undefined || value === "") return "–";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "–";
   return new Intl.DateTimeFormat(locale, {
     dateStyle: "short",
-    timeStyle: "medium"
+    timeStyle: "medium",
+    timeZone
   }).format(date);
+}
+
+export function formatPassTimeRange(firstSeen, lastSeen, locale = "fi-FI") {
+  const first = new Date(firstSeen);
+  const last = new Date(lastSeen);
+  if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime())) return "–";
+  const formatter = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: DISPLAY_TIME_ZONE
+  });
+  return `${formatter.format(first).replace(":", ".")}–${formatter.format(last).replace(":", ".")}`;
+}
+
+export function helsinkiDate(value = Date.now()) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      timeZone: DISPLAY_TIME_ZONE
+    }).formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
 export function deriveReceiverState({
@@ -92,6 +128,47 @@ export function aircraftOwnerLine(aircraft) {
     ? aircraft.registration.trim().toUpperCase()
     : "";
   return [ownerOperator, registration].filter(Boolean).join(" · ") || null;
+}
+
+function friendlyOwnerName(value) {
+  const owner = typeof value === "string" ? value.trim() : "";
+  if (!owner) return null;
+  if (/^finnair\b/i.test(owner)) return "Finnair";
+  if (/^norwegian\b/i.test(owner)) return "Norwegian";
+  return owner;
+}
+
+export function aircraftOperatorLabel(aircraft) {
+  if (aircraft?.is_military === true) return "Sotilaskone";
+  const owner = friendlyOwnerName(aircraft?.owner_operator);
+  if (owner) return owner;
+  const callsign = typeof aircraft?.callsign === "string"
+    ? aircraft.callsign.trim().toUpperCase()
+    : "";
+  const prefix = /^([A-Z]{3})/.exec(callsign)?.[1];
+  return trustedCallsignOperators[prefix] || "Tuntematon operaattori";
+}
+
+export function passRouteLabel(pass) {
+  const origin = typeof pass?.origin_iata === "string"
+    ? pass.origin_iata.trim().toUpperCase()
+    : "";
+  const destination = typeof pass?.destination_iata === "string"
+    ? pass.destination_iata.trim().toUpperCase()
+    : "";
+  return /^[A-Z]{3}$/.test(origin) && /^[A-Z]{3}$/.test(destination)
+    ? `${origin} → ${destination}`
+    : "Reitti ei tiedossa";
+}
+
+export function passTypeLabel(pass) {
+  const description = typeof pass?.type_description === "string"
+    ? pass.type_description.trim()
+    : "";
+  const code = typeof pass?.type_code === "string"
+    ? pass.type_code.trim().toUpperCase()
+    : "";
+  return description || code || "Konetyyppi ei tiedossa";
 }
 
 export const receiverStateLabels = Object.freeze({

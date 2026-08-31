@@ -1,11 +1,16 @@
 import {
+  aircraftOperatorLabel,
   aircraftOwnerLine,
   aircraftTypeLabel,
   deriveReceiverState,
   feetToMetres,
   formatDateTime,
+  formatPassTimeRange,
   hasValidPosition,
+  helsinkiDate,
   knotsToKmh,
+  passRouteLabel,
+  passTypeLabel,
   receiverStateLabels
 } from "./state.mjs";
 
@@ -19,6 +24,7 @@ const elements = {
   lastUpdate: document.querySelector("[data-last-update]"),
   connectionNotice: document.querySelector("[data-connection-notice]"),
   statsDate: document.querySelector("[data-stats-date]"),
+  selectedDate: document.querySelector("[data-selected-date]"),
   uniqueAircraft: document.querySelector("[data-unique-aircraft]"),
   passCount: document.querySelector("[data-pass-count]"),
   closestAircraft: document.querySelector("[data-closest-aircraft]"),
@@ -28,13 +34,21 @@ const elements = {
   noPositionCount: document.querySelector("[data-no-position-count]"),
   withPosition: document.querySelector("[data-aircraft-with-position]"),
   withoutPosition: document.querySelector("[data-aircraft-without-position]"),
-  passesList: document.querySelector("[data-passes-list]")
+  passesList: document.querySelector("[data-passes-list]"),
+  passesDate: document.querySelector("[data-passes-date]"),
+  passesCount: document.querySelector("[data-passes-count]")
 };
 
 const viewState = {
   data: null,
-  requestFailed: false
+  requestFailed: false,
+  selectedDate: helsinkiDate()
 };
+
+let refreshSequence = 0;
+
+elements.selectedDate.value = viewState.selectedDate;
+elements.selectedDate.max = viewState.selectedDate;
 
 function formatDate(value) {
   if (!value) return "–";
@@ -163,48 +177,71 @@ function renderAircraft(aircraft = []) {
     : [emptyState("Ei sijaintitiedottomia havaintoja.")]));
 }
 
-function passCard(pass) {
-  const article = document.createElement("article");
-  article.className = "pass-card card";
+function altitudeRange(pass) {
+  const minimum = feetToMetres(pass.min_altitude_ft);
+  const maximum = feetToMetres(pass.max_altitude_ft);
+  if (minimum === null && maximum === null) return "–";
+  if (minimum === null || maximum === null || Math.round(minimum) === Math.round(maximum)) {
+    const altitude = minimum ?? maximum;
+    return `${formatNumber(altitude, { maximumFractionDigits: 0 })} m`;
+  }
+  return `${formatNumber(minimum, { maximumFractionDigits: 0 })}–${formatNumber(maximum, { maximumFractionDigits: 0 })} m`;
+}
 
-  const heading = document.createElement("div");
-  heading.className = "pass-title-row";
-  const titleWrap = document.createElement("div");
-  const eyebrow = document.createElement("p");
-  eyebrow.className = "pass-callsign";
-  eyebrow.textContent = pass.callsign || "Tuntematon kutsutunnus";
-  const title = document.createElement("h3");
-  const typeLabel = aircraftTypeLabel(pass);
-  title.className = typeLabel ? "pass-aircraft-type" : "pass-icao-title";
-  title.textContent = typeLabel || pass.icao || "–";
-  titleWrap.append(eyebrow, title);
-  const identity = aircraftIdentity(pass, { includeIcao: Boolean(typeLabel) });
-  if (identity) titleWrap.append(identity);
-  const closest = document.createElement("strong");
-  closest.className = "pass-distance";
-  closest.textContent = hasFiniteNumber(pass.closest_distance_km)
-    ? `${formatNumber(pass.closest_distance_km, { maximumFractionDigits: 1 })} km`
-    : "Etäisyys ei saatavilla";
-  heading.append(titleWrap, closest);
+function compactItem(className, value) {
+  const item = document.createElement("span");
+  item.className = className;
+  item.textContent = value;
+  return item;
+}
 
-  const timeline = document.createElement("dl");
-  timeline.className = "pass-timeline";
-  timeline.append(
+function passRow(pass) {
+  const details = document.createElement("details");
+  details.className = "pass-row card";
+
+  const summary = document.createElement("summary");
+  summary.className = "pass-summary";
+  const main = document.createElement("span");
+  main.className = "pass-summary-main";
+  main.append(
+    compactItem("pass-operator", aircraftOperatorLabel(pass)),
+    compactItem("pass-callsign", pass.callsign || "Ei kutsutunnusta"),
+    compactItem("pass-route", passRouteLabel(pass)),
+    compactItem("pass-type", passTypeLabel(pass)),
+    compactItem("pass-time-range", formatPassTimeRange(pass.first_seen, pass.last_seen))
+  );
+  const distance = compactItem(
+    "pass-distance",
+    hasFiniteNumber(pass.closest_distance_km)
+      ? `${formatNumber(pass.closest_distance_km, { maximumFractionDigits: 1 })} km`
+      : "Etäisyys ei tiedossa"
+  );
+  summary.append(main, distance);
+
+  const technical = document.createElement("dl");
+  technical.className = "pass-technical";
+  technical.append(
+    metric("Rekisteritunnus", pass.registration || "–"),
+    metric("ICAO-tunnus", pass.icao || "–"),
+    metric("Korkeus", altitudeRange(pass)),
+    metric("Tyyppikoodi", pass.type_code || "–"),
     metric("Ensimmäinen havainto", formatDateTime(pass.first_seen)),
     metric("Viimeinen havainto", formatDateTime(pass.last_seen)),
-    metric("Lähimmillään", formatDateTime(pass.closest_at))
+    metric("Lähimmillään", formatDateTime(pass.closest_at)),
+    metric("Tietokannan operaattori", pass.owner_operator || "–")
   );
-
-  article.append(heading, timeline);
-  return article;
+  details.append(summary, technical);
+  return details;
 }
 
 function renderPasses(passes = []) {
+  elements.passesDate.textContent = formatDate(viewState.selectedDate);
+  elements.passesCount.textContent = `${passes.length} ${passes.length === 1 ? "ohitus" : "ohitusta"}`;
   if (passes.length) {
-    elements.passesList.replaceChildren(...passes.map(passCard));
+    elements.passesList.replaceChildren(...passes.map(passRow));
     return;
   }
-  const empty = emptyState("Ohituksia ei ole vielä saatavilla.");
+  const empty = emptyState("Valitulta päivältä ei ole ohituksia.");
   empty.classList.add("card");
   elements.passesList.replaceChildren(empty);
 }
@@ -281,27 +318,54 @@ async function fetchJson(path) {
   return response.json();
 }
 
+async function fetchAllPasses(date) {
+  const passes = [];
+  const seenCursors = new Set();
+  let cursor = null;
+  do {
+    const search = new URLSearchParams({ date, limit: "100" });
+    if (cursor) search.set("cursor", cursor);
+    const page = await fetchJson(`/api/passes?${search}`);
+    if (!Array.isArray(page.passes)) throw new Error("SkyScope API returned invalid pass data");
+    passes.push(...page.passes);
+    cursor = page.next_cursor || null;
+    if (cursor && seenCursors.has(cursor)) throw new Error("SkyScope API repeated a pagination cursor");
+    if (cursor) seenCursors.add(cursor);
+  } while (cursor);
+  return { date, passes };
+}
+
 async function refresh() {
   if (!apiBaseUrl) {
     render();
     return;
   }
 
+  const sequence = ++refreshSequence;
+  const selectedDate = viewState.selectedDate;
   try {
     const [status, live, passes, stats] = await Promise.all([
       fetchJson("/api/status"),
       fetchJson("/api/live"),
-      fetchJson("/api/passes"),
-      fetchJson("/api/stats")
+      fetchAllPasses(selectedDate),
+      fetchJson(`/api/stats?${new URLSearchParams({ date: selectedDate })}`)
     ]);
+    if (sequence !== refreshSequence) return;
     viewState.data = { status, live, passes, stats };
     viewState.requestFailed = false;
   } catch (error) {
+    if (sequence !== refreshSequence) return;
     viewState.requestFailed = true;
     console.warn("SkyScope-päivitys epäonnistui; säilytetään viimeisin onnistunut data.", error);
   }
   render();
 }
+
+elements.selectedDate.addEventListener("change", () => {
+  if (!elements.selectedDate.value) return;
+  viewState.selectedDate = elements.selectedDate.value;
+  refresh();
+});
 
 refresh();
 window.setInterval(refresh, POLL_INTERVAL_MS);

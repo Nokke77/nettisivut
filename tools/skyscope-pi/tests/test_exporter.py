@@ -7,7 +7,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from exporter import build_current_aircraft, group_passes, haversine_km, read_observations
+from exporter import (
+    add_current_altitudes,
+    build_current_aircraft,
+    group_passes,
+    haversine_km,
+    read_observations,
+)
 
 
 class ExporterTests(unittest.TestCase):
@@ -31,6 +37,31 @@ class ExporterTests(unittest.TestCase):
         initial_id = group_passes([first], 0.0, 0.0)[0]["id"]
         grown_id = group_passes([first, second], 0.0, 0.0)[0]["id"]
         self.assertEqual(initial_id, grown_id)
+
+    def test_pass_altitude_range_is_collected_without_guessing_missing_values(self):
+        rows = [
+            {"captured_at": "2026-08-30T10:00:00Z", "icao": "abc123", "callsign": "FIN1", "latitude": 1.0, "longitude": 0.0, "altitude_ft": 12000},
+            {"captured_at": "2026-08-30T10:05:00Z", "icao": "abc123", "callsign": "FIN1", "latitude": 0.8, "longitude": 0.0, "altitude_ft": 9000},
+        ]
+
+        flight_pass = group_passes(rows, 0.0, 0.0)[0]
+
+        self.assertEqual(flight_pass["min_altitude_ft"], 9000)
+        self.assertEqual(flight_pass["max_altitude_ft"], 12000)
+
+    def test_current_readsb_altitude_completes_the_active_pass(self):
+        flight_pass = group_passes([
+            {"captured_at": "2026-08-30T10:00:00Z", "icao": "abc123", "callsign": "FIN1", "latitude": None, "longitude": None}
+        ], 0.0, 0.0)[0]
+
+        add_current_altitudes([flight_pass], [{
+            "icao": "ABC123",
+            "altitude_ft": 10000,
+            "seen_at": "2026-08-30T10:00:20Z",
+        }])
+
+        self.assertEqual(flight_pass["min_altitude_ft"], 10000)
+        self.assertEqual(flight_pass["max_altitude_ft"], 10000)
 
     def test_missing_position_is_kept_without_distance(self):
         payload = {
@@ -104,16 +135,16 @@ class ExporterTests(unittest.TestCase):
                 """
                 CREATE TABLE observations (
                     captured_at, icao TEXT, callsign TEXT,
-                    latitude REAL, longitude REAL
+                    latitude REAL, longitude REAL, altitude_ft REAL
                 )
                 """
             )
             connection.executemany(
-                "INSERT INTO observations VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO observations VALUES (?, ?, ?, ?, ?, ?)",
                 [
-                    (datetime(2026, 8, 30, 10, tzinfo=timezone.utc).timestamp(), "ABC123", "FIN1", 1.0, 0.0),
-                    ("2026-08-30T10:05:00Z", "DEF456", "FIN2", None, None),
-                    (datetime(2026, 8, 20, 10, tzinfo=timezone.utc).timestamp(), "OLD123", None, None, None),
+                    (datetime(2026, 8, 30, 10, tzinfo=timezone.utc).timestamp(), "ABC123", "FIN1", 1.0, 0.0, 12000),
+                    ("2026-08-30T10:05:00Z", "DEF456", "FIN2", None, None, None),
+                    (datetime(2026, 8, 20, 10, tzinfo=timezone.utc).timestamp(), "OLD123", None, None, None, None),
                 ],
             )
             connection.commit()
@@ -124,6 +155,7 @@ class ExporterTests(unittest.TestCase):
             )
 
             self.assertEqual({row["icao"] for row in rows}, {"ABC123", "DEF456"})
+            self.assertEqual(rows[0]["altitude_ft"], 12000)
 
 
 if __name__ == "__main__":
