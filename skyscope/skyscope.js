@@ -220,11 +220,9 @@ function passRow(pass) {
     metric("Rekisteritunnus", pass.registration || "–"),
     metric("ICAO-tunnus", pass.icao || "–"),
     metric("Korkeus", altitudeRange(pass)),
-    metric("Tyyppikoodi", pass.type_code || "–"),
     metric("Ensimmäinen havainto", formatDateTime(pass.first_seen)),
     metric("Viimeinen havainto", formatDateTime(pass.last_seen)),
-    metric("Lähimmillään", formatDateTime(pass.closest_at)),
-    metric("Tietokannan operaattori", pass.owner_operator || "–")
+    metric("Lähimmillään", formatDateTime(pass.closest_at))
   );
   details.append(summary, technical);
   return details;
