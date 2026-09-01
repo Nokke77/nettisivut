@@ -176,12 +176,6 @@ export function passRouteLabel(pass) {
     : "Reitti ei tiedossa";
 }
 
-export function routeProvenanceLabel(item) {
-  if (item?.route?.kind !== "callsign_database") return null;
-  return `Tietokannan reitti · haettu ${formatDateTime(item.route.fetched_at)}. `
-    + "Kutsutunnukseen perustuva tieto; tämän lennon toteutunutta reittiä ei ole vahvistettu.";
-}
-
 export function passTypeLabel(pass) {
   const description = typeof pass?.type_description === "string"
     ? pass.type_description.trim()

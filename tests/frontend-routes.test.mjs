@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aircraftOperatorLabel, passRouteLabel, routeProvenanceLabel } from "../skyscope/state.mjs";
+import { aircraftOperatorLabel, passRouteLabel } from "../skyscope/state.mjs";
 
 const route = {
   kind: "callsign_database", fetched_at: "2026-09-01T14:00:00Z",
@@ -29,12 +29,4 @@ test("unknown cities fall back to codes without inferring a destination", () => 
   assert.equal(passRouteLabel({ route: value }), "ABC → EFGH");
   assert.equal(passRouteLabel({}), "Reitti ei tiedossa");
   assert.equal(passRouteLabel({ route: { kind: "callsign_database", airports: [] } }), "Reitti ei tiedossa");
-});
-
-test("route provenance says source lookup time, not a verified flight plan", () => {
-  const label = routeProvenanceLabel({ route });
-  assert.match(label, /Tietokannan reitti/);
-  assert.match(label, /haettu/);
-  assert.match(label, /ei ole vahvistettu/);
-  assert.equal(routeProvenanceLabel({}), null);
 });

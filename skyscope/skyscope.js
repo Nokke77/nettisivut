@@ -11,9 +11,8 @@ import {
   knotsToKmh,
   passRouteLabel,
   passTypeLabel,
-  routeProvenanceLabel,
   receiverStateLabels
-} from "./state.mjs?v=20260901-routes";
+} from "./state.mjs?v=20260901-route-ui";
 
 const POLL_INTERVAL_MS = 30_000;
 const configuredApiBase = window.SKYSCOPE_CONFIG?.apiBaseUrl?.trim() || "";
@@ -158,7 +157,6 @@ function aircraftCard(aircraft, hasPosition) {
     const route = document.createElement("p");
     route.className = "aircraft-owner";
     route.textContent = `${aircraftOperatorLabel(aircraft)} · ${passRouteLabel(aircraft)} (tietokantareitti)`;
-    route.title = routeProvenanceLabel(aircraft) || "";
     article.append(route);
   }
   if (identity) article.append(identity);
@@ -209,7 +207,6 @@ function passRow(pass) {
   const main = document.createElement("span");
   main.className = "pass-summary-main";
   const route = compactItem("pass-route", passRouteLabel(pass));
-  route.title = routeProvenanceLabel(pass) || "";
   main.append(
     compactItem("pass-operator", aircraftOperatorLabel(pass)),
     compactItem("pass-callsign", pass.callsign || "Ei kutsutunnusta"),
@@ -235,15 +232,6 @@ function passRow(pass) {
     metric("Viimeinen havainto", formatDateTime(pass.last_seen)),
     metric("Lähimmillään", formatDateTime(pass.closest_at))
   );
-  if (pass.route) {
-    technical.append(metric("Reitin tarkkuus", routeProvenanceLabel(pass)));
-    const source = metric("Reittitiedon lähde", "");
-    const link = document.createElement("a");
-    link.href = "https://github.com/vradarserver/standing-data";
-    link.textContent = "VRS standing-data / ADSB.lol (CC0)";
-    source.querySelector("dd").append(link);
-    technical.append(source);
-  }
   details.append(summary, technical);
   return details;
 }

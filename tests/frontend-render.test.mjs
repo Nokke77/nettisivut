@@ -80,8 +80,8 @@ test("ten observed passes render as ten compact readable rows, not one latest fl
     assert.equal(row.tagName, "details");
     assert.equal(row.open, false);
     assert.match(row.querySelector("summary").textContent, /Finnair.*FIN6YP.*Kuopio → Helsinki/);
-    assert.match(row.textContent, /ei ole vahvistettu/);
-    assert.equal(row.querySelector("a").href, "https://github.com/vradarserver/standing-data");
+    assert.doesNotMatch(row.textContent, /Reitin tarkkuus|Reittitiedon lähde|ei ole vahvistettu/);
+    assert.equal(row.querySelector("a"), null);
     assert.match(row.textContent, /914–1\s?219 m/);
   }
 });
