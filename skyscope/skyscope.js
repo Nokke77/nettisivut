@@ -11,8 +11,9 @@ import {
   knotsToKmh,
   passRouteLabel,
   passTypeLabel,
+  routeProvenanceLabel,
   receiverStateLabels
-} from "./state.mjs";
+} from "./state.mjs?v=20260901-routes";
 
 const POLL_INTERVAL_MS = 30_000;
 const configuredApiBase = window.SKYSCOPE_CONFIG?.apiBaseUrl?.trim() || "";
@@ -153,6 +154,13 @@ function aircraftCard(aircraft, hasPosition) {
 
   const identity = aircraftIdentity(aircraft);
   article.append(heading);
+  if (aircraft.route) {
+    const route = document.createElement("p");
+    route.className = "aircraft-owner";
+    route.textContent = `${aircraftOperatorLabel(aircraft)} · ${passRouteLabel(aircraft)} (tietokantareitti)`;
+    route.title = routeProvenanceLabel(aircraft) || "";
+    article.append(route);
+  }
   if (identity) article.append(identity);
   article.append(metrics);
   return article;
@@ -194,15 +202,18 @@ function compactItem(className, value) {
 function passRow(pass) {
   const details = document.createElement("details");
   details.className = "pass-row card";
+  if (pass.id) details.dataset.passId = pass.id;
 
   const summary = document.createElement("summary");
   summary.className = "pass-summary";
   const main = document.createElement("span");
   main.className = "pass-summary-main";
+  const route = compactItem("pass-route", passRouteLabel(pass));
+  route.title = routeProvenanceLabel(pass) || "";
   main.append(
     compactItem("pass-operator", aircraftOperatorLabel(pass)),
     compactItem("pass-callsign", pass.callsign || "Ei kutsutunnusta"),
-    compactItem("pass-route", passRouteLabel(pass)),
+    route,
     compactItem("pass-type", passTypeLabel(pass)),
     compactItem("pass-time-range", formatPassTimeRange(pass.first_seen, pass.last_seen))
   );
@@ -224,15 +235,32 @@ function passRow(pass) {
     metric("Viimeinen havainto", formatDateTime(pass.last_seen)),
     metric("Lähimmillään", formatDateTime(pass.closest_at))
   );
+  if (pass.route) {
+    technical.append(metric("Reitin tarkkuus", routeProvenanceLabel(pass)));
+    const source = metric("Reittitiedon lähde", "");
+    const link = document.createElement("a");
+    link.href = "https://github.com/vradarserver/standing-data";
+    link.textContent = "VRS standing-data / ADSB.lol (CC0)";
+    source.querySelector("dd").append(link);
+    technical.append(source);
+  }
   details.append(summary, technical);
   return details;
 }
 
 function renderPasses(passes = []) {
+  const expandedIds = new Set(
+    [...elements.passesList.querySelectorAll("details[open][data-pass-id]")]
+      .map((row) => row.dataset.passId)
+  );
   elements.passesDate.textContent = formatDate(viewState.selectedDate);
   elements.passesCount.textContent = `${passes.length} ${passes.length === 1 ? "ohitus" : "ohitusta"}`;
   if (passes.length) {
-    elements.passesList.replaceChildren(...passes.map(passRow));
+    elements.passesList.replaceChildren(...passes.map((pass) => {
+      const row = passRow(pass);
+      row.open = expandedIds.has(pass.id);
+      return row;
+    }));
     return;
   }
   const empty = emptyState("Valitulta päivältä ei ole ohituksia.");

@@ -273,6 +273,9 @@ automaattisesti, jos sama ICAO-tunnus havaitaan myöhemmin metatietojen kanssa.
 
 ## Paikalliset testit ennen julkaisua
 
+Reittitietojen rajattu käyttöönotto ja palautus on kuvattu tiedostossa
+[skyscope-routes.md](skyscope-routes.md). Se ei vaadi muutoksia Pi:lle.
+
 Aja repositoryn juuresta:
 
 ```sh

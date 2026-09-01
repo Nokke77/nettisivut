@@ -1,3 +1,5 @@
+import { addLiveRoutes, decodeStoredRoute, enrichRecentRoutes, routesEnabled } from "./routes.js";
+
 const MAX_REQUEST_BYTES = 512 * 1024;
 const MAX_AIRCRAFT = 250;
 const MAX_PASSES_PER_INGEST = 100;
@@ -546,15 +548,26 @@ async function getLive(env, origin) {
   const row = await env.DB.prepare(
     "SELECT captured_at, aircraft_json FROM receiver_state WHERE id = 1"
   ).first();
+  let aircraft = row ? JSON.parse(row.aircraft_json) : [];
+  if (routesEnabled(env) && aircraft.length) {
+    try {
+      aircraft = await addLiveRoutes(env.DB, aircraft, row.captured_at);
+    } catch {
+      // A route failure must not hide aircraft or change receiver health.
+      console.warn("SkyScope live route metadata unavailable");
+    }
+  }
   return jsonResponse({
     updated_at: row?.captured_at || null,
-    aircraft: row ? JSON.parse(row.aircraft_json) : []
+    aircraft
   }, 200, origin);
 }
 
 function publicPass(pass) {
+  const { route_json: routeJson, ...fields } = pass;
   return {
-    ...pass,
+    ...fields,
+    route: decodeStoredRoute(routeJson),
     is_military: pass.is_military === null || pass.is_military === undefined
       ? null
       : Boolean(pass.is_military)
@@ -564,6 +577,10 @@ function publicPass(pass) {
 async function getPasses(request, env, origin) {
   const searchParams = new URL(request.url).searchParams;
   const requestedDate = searchParams.get("date");
+  const routeColumns = routesEnabled(env) ? ", r.route_json" : "";
+  const routeJoin = routesEnabled(env)
+    ? "LEFT JOIN pass_routes AS r ON r.pass_id = p.id AND r.callsign = UPPER(TRIM(p.callsign))"
+    : "";
 
   if (requestedDate === null) {
     const configuredMaximum = numberSetting(env.MAX_PUBLIC_PASSES, 50, 1, 100);
@@ -574,9 +591,10 @@ async function getPasses(request, env, origin) {
         p.closest_distance_km, p.closest_at,
         p.min_altitude_ft, p.max_altitude_ft,
         m.registration, m.type_code, m.type_description,
-        m.owner_operator, m.is_military
+        m.owner_operator, m.is_military ${routeColumns}
       FROM passes AS p
       LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
+      ${routeJoin}
       ORDER BY p.last_seen DESC
       LIMIT ?
     `).bind(requested).all();
@@ -616,9 +634,10 @@ async function getPasses(request, env, origin) {
       p.closest_distance_km, p.closest_at,
       p.min_altitude_ft, p.max_altitude_ft,
       m.registration, m.type_code, m.type_description,
-      m.owner_operator, m.is_military
+      m.owner_operator, m.is_military ${routeColumns}
     FROM passes AS p
     LEFT JOIN aircraft_metadata AS m ON m.icao = p.icao
+    ${routeJoin}
     WHERE p.first_seen >= ? AND p.first_seen < ?
       ${cursorPredicate}
     ORDER BY p.first_seen DESC, p.id DESC
@@ -701,12 +720,28 @@ async function route(request, env) {
   if (pathname === "/api/ingest" && request.method === "POST") return handleIngest(request, env, origin);
   if (pathname === "/api/status" && request.method === "GET") return getStatus(env, origin);
   if (pathname === "/api/live" && request.method === "GET") return getLive(env, origin);
-  if (pathname === "/api/passes" && request.method === "GET") return getPasses(request, env, origin);
+  if (pathname === "/api/passes" && request.method === "GET") {
+    try {
+      return await getPasses(request, env, origin);
+    } catch (error) {
+      if (!routesEnabled(env)) throw error;
+      console.warn("SkyScope pass route metadata unavailable");
+      return getPasses(request, { ...env, ROUTE_ENRICHMENT_ENABLED: "false" }, origin);
+    }
+  }
   if (pathname === "/api/stats" && request.method === "GET") return getStats(request, env, origin);
   return jsonResponse({ error: "Not found" }, 404, origin);
 }
 
 export default {
+  async scheduled(_event, env) {
+    try {
+      await enrichRecentRoutes(env);
+    } catch {
+      // No raw upstream response, receiver coordinates or tokens in logs.
+      console.warn("SkyScope route enrichment unavailable");
+    }
+  },
   async fetch(request, env) {
     try {
       return await route(request, env);

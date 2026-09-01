@@ -4,7 +4,12 @@ export const DISPLAY_TIME_ZONE = "Europe/Helsinki";
 
 const trustedCallsignOperators = Object.freeze({
   FIN: "Finnair",
-  NOZ: "Norwegian"
+  NOZ: "Norwegian",
+  CHH: "Hainan Airlines"
+});
+
+const airportCityLabels = Object.freeze({
+  EFKU: "Kuopio", EFHK: "Helsinki", EGPH: "Edinburgh", ZBAA: "Peking"
 });
 
 export function formatDateTime(value, locale = "fi-FI", timeZone = DISPLAY_TIME_ZONE) {
@@ -150,6 +155,16 @@ export function aircraftOperatorLabel(aircraft) {
 }
 
 export function passRouteLabel(pass) {
+  const airports = pass?.route?.airports;
+  if (pass?.route?.kind === "callsign_database" && Array.isArray(airports)
+    && airports.length >= 2 && airports.length <= 8) {
+    const labels = airports.map((airport) => airportCityLabels[airport?.icao]
+      || airport?.city || airport?.iata || airport?.icao);
+    if (labels.every((label) => typeof label === "string" && label.trim())) {
+      // Preserve all stops: a multi-leg route is not a verified single flight leg.
+      return labels.join(" → ");
+    }
+  }
   const origin = typeof pass?.origin_iata === "string"
     ? pass.origin_iata.trim().toUpperCase()
     : "";
@@ -159,6 +174,12 @@ export function passRouteLabel(pass) {
   return /^[A-Z]{3}$/.test(origin) && /^[A-Z]{3}$/.test(destination)
     ? `${origin} → ${destination}`
     : "Reitti ei tiedossa";
+}
+
+export function routeProvenanceLabel(item) {
+  if (item?.route?.kind !== "callsign_database") return null;
+  return `Tietokannan reitti · haettu ${formatDateTime(item.route.fetched_at)}. `
+    + "Kutsutunnukseen perustuva tieto; tämän lennon toteutunutta reittiä ei ole vahvistettu.";
 }
 
 export function passTypeLabel(pass) {

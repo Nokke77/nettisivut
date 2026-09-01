@@ -4,12 +4,17 @@ compatibility_date = "2026-08-30"
 workers_dev = true
 preview_urls = false
 
+[triggers]
+crons = ["* * * * *"]
+
 [vars]
 PRODUCTION_ORIGIN = "https://noeljeromaa.com"
 LOCAL_DEV_ORIGIN = "http://localhost:8000"
 ONLINE_AFTER_SECONDS = "90"
 OFFLINE_AFTER_SECONDS = "300"
 MAX_PUBLIC_PASSES = "50"
+# Enable only after migration 0004 and the documented upstream smoke test.
+ROUTE_ENRICHMENT_ENABLED = "true"
 
 [secrets]
 required = ["INGEST_TOKEN"]
