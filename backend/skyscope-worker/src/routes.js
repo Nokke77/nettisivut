@@ -119,7 +119,10 @@ export async function fetchSourceRoute(callsign, now, fetcher = fetch) {
   try {
     const response = await fetcher(routeSourceUrl(callsign), {
       signal: controller.signal,
-      redirect: "error",
+      // Workers supports "follow" and "manual", but not the Fetch-standard
+      // "error" mode. Manual still prevents following an untrusted redirect;
+      // the non-2xx response is handled below as a cached upstream error.
+      redirect: "manual",
       headers: { Accept: "application/json" }
     });
     if (response.status === 404) {

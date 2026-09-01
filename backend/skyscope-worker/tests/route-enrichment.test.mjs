@@ -133,7 +133,7 @@ test("HTTP 404 has a six-hour negative cache, not a guessed route", async () => 
 });
 
 test("rate limiting and upstream errors cause global backoff", async () => {
-  for (const status of [429, 500, 503]) {
+  for (const status of [301, 302, 429, 500, 503]) {
     const result = await fetchSourceRoute("FIN6YP", NOW, async () => new Response(null, { status }));
     assert.equal(result.state, "error");
     assert.ok(Date.parse(result.pauseUntil) >= NOW + 5 * 60_000);
@@ -168,7 +168,7 @@ test("one scheduled lookup stores a route and an immutable pass snapshot", async
   const provider = upstream();
   await enrichRecentRoutes(environment(db), { now: NOW, fetcher: provider.fetcher });
   assert.equal(provider.calls.length, 1);
-  assert.equal(provider.calls[0].options.redirect, "error");
+  assert.equal(provider.calls[0].options.redirect, "manual");
   assert.equal(db.row("SELECT requests FROM route_budget").requests, 1);
   assert.equal(db.row("SELECT COUNT(*) n FROM pass_routes").n, 1);
   assert.ok(db.queries < 20, `D1 queries: ${db.queries}`);

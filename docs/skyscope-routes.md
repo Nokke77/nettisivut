@@ -98,9 +98,13 @@ kytke reittejä tuotantoon. Muutos valmisteltiin main-commitin
    npx --yes wrangler@4.127.1 d1 migrations apply skyscope --remote
    ```
 
-5. Muuta Wranglerissa vain reittiasetus arvoon `"true"`. Julkaise nykyinen Worker
-   projektin aiemmalla menettelyllä. Älä muuta ingest-secretia, Pi:n asetuksia,
-   domainia tai palvelutasoa. Tarkista status-, live- ja päiväkohtainen passes-API.
+5. Muuta Wranglerissa vain reittiasetus arvoon `"true"`. Julkaise Worker komennolla
+   `npx --yes wrangler@4.127.1 deploy --keep-vars`, jotta koodi ja Cron Trigger
+   sidotaan samaan julkaisuun. Pelkkä `versions upload` / `versions deploy` ei
+   julkaise `wrangler.toml`-tiedoston triggereitä; sitä työnkulkua käytettäessä aja
+   lisäksi `npx --yes wrangler@4.127.1 triggers deploy`. Älä muuta ingest-secretia,
+   Pi:n asetuksia, domainia tai palvelutasoa. Tarkista status-, live- ja
+   päiväkohtainen passes-API.
 6. Julkaise frontend tavallisella GitHub Pages -menettelyllä vasta Worker-tarkistuksen
    jälkeen. Uusi frontend toimii myös reittien ollessa vielä puuttuvia.
 7. Cron Triggerin aktivoituminen voi viivästyä. Tarkista muutaman ajon jälkeen
