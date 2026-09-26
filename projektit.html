@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Noel Jeromaan projektit. Ensimmäisenä SkyScope, omaan ADS-B-vastaanottimeen perustuva lentoliikenteen seuranta.">
+    <meta name="theme-color" content="#07070b">
+    <title>Projektit | Noel Jeromaa</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="projektit.css">
+  </head>
+  <body class="projects-page">
+    <header class="site-header">
+      <div class="nav-wrap">
+        <a class="brand" href="index.html">Noel Jeromaa</a>
+        <nav class="site-nav" aria-label="Päänavigaatio">
+          <a href="index.html">Etusivu</a>
+          <a href="tietoaminusta.html">Tietoa minusta</a>
+          <a href="projektit.html" aria-current="page">Projektit</a>
+          <a href="/skyscope/">SkyScope</a>
+          <a href="yhteystiedot.html">Yhteystiedot</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <header class="page-hero">
+        <div class="page-hero-inner">
+          <p class="eyebrow">Noel Jeromaa</p>
+          <h1 class="page-title">Projektit</h1>
+        </div>
+      </header>
+
+      <!-- Lisää seuraava projekti omana project-card-artikkelinaan project-listin sisään. -->
+      <div class="content project-list">
+        <article class="card project-card" id="skyscope-projekti" aria-labelledby="skyscope-title">
+          <div class="project-overview">
+            <div class="project-intro">
+              <p class="project-kicker">Projekti 01</p>
+              <h2 id="skyscope-title">SkyScope</h2>
+              <p class="project-lead">Oman vastaanottimeni kuulemat lentokoneet ja päivän ohitukset yhdessä näkymässä.</p>
+              <p>Rakensin SkyScopen, jotta voin katsoa, mitä kotona oleva vastaanottimeni kuulee juuri nyt. Sivulla näkyvät myös päivän havainnot. Alla kerron projektista ensin lyhyesti ja sen jälkeen tarkemmin.</p>
+              <div class="project-version-switch" data-project-versions aria-label="Valitse SkyScopen esittelyn pituus">
+                <button class="project-version-button is-active" type="button" data-version="short" aria-controls="skyscope-short" aria-pressed="true">Lyhyesti <span>· noin 3 min</span></button>
+                <button class="project-version-button" type="button" data-version="long" aria-controls="skyscope-long" aria-pressed="false">Teknisemmin <span>· noin 15 min</span></button>
+              </div>
+              <a class="project-live-link" href="/skyscope/">Avaa SkyScope <span aria-hidden="true">→</span></a>
+            </div>
+
+            <div class="project-gallery" aria-label="Tulevat SkyScope-kuvat">
+              <div class="project-image-slot project-image-slot-wide" role="img" aria-label="Paikka tulevalle kuvalle kotona olevasta antennista">
+                <span class="project-image-icon" aria-hidden="true"></span>
+                <strong>Antenni kotona</strong>
+                <span>Kuva lisätään myöhemmin</span>
+              </div>
+              <div class="project-image-slot" role="img" aria-label="Paikka tulevalle Raspberry Pi -kuvalle">
+                <span class="project-image-icon" aria-hidden="true"></span>
+                <strong>Raspberry Pi</strong>
+                <span>Kuva lisätään myöhemmin</span>
+              </div>
+              <div class="project-image-slot" role="img" aria-label="Paikka tulevalle SkyScopen nykytilan kuvakaappaukselle">
+                <span class="project-image-icon" aria-hidden="true"></span>
+                <strong>SkyScope-näkymä</strong>
+                <span>Kuvakaappaus lisätään myöhemmin</span>
+              </div>
+              <div class="project-image-slot project-image-slot-wide project-image-slot-compact" role="img" aria-label="Paikka tulevalle päivän ohitusten kuvakaappaukselle">
+                <span class="project-image-icon" aria-hidden="true"></span>
+                <strong>Päivän ohitukset</strong>
+                <span>Kuvakaappaus lisätään myöhemmin</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-version" id="skyscope-short" data-version-panel="short">
+            <div class="project-reading-heading">
+              <p class="project-kicker">Lyhyesti · noin 3 min</p>
+              <h3>SkyScope lyhyesti</h3>
+            </div>
+            <div class="project-prose">
+              <section aria-labelledby="short-what">
+                <h4 id="short-what">Mikä SkyScope on?</h4>
+                <p>SkyScope on oma sivuni, jolla näkyvät kotona olevan lentokonevastaanottimeni havainnot. Se näyttää, mitä koneita vastaanotin kuulee tällä hetkellä ja mitä koneita se on kuullut päivän aikana. En seuraa tällä kaikkia maailman lentoja, vaan ainoastaan niitä, joiden signaali ulottuu omaan vastaanottimeeni.</p>
+                <p>Lentokoneet lähettävät radiosignaaleja, joista voi saada esimerkiksi tunnuksen, korkeuden ja nopeuden. Kaikista koneista ei saada samoja tietoja. Jos sijainti puuttuu, SkyScope näyttää koneen erikseen ilman sijaintia sen sijaan, että se arvaisi missä kone on.</p>
+                <p>Minusta kiinnostavinta on se, että luvut tulevat omasta laitteesta. Näen samalla, miten päivän tilanne muuttuu: joskus vastaanotin kuulee monta konetta, joskus ei yhtään. Tyhjä lista ei siis tarkoita, ettei ilmassa olisi koneita. Se kertoo vain, ettei oma laitteeni kuule niitä juuri sillä hetkellä.</p>
+              </section>
+              <section aria-labelledby="short-data">
+                <h4 id="short-data">Mistä tiedot tulevat?</h4>
+                <p>Antenni ja vastaanotin ovat kotonani. Raspberry Pi lukee niiden avulla lentokoneiden lähettämiä ADS-B-viestejä. Pi kokoaa tämänhetkiset koneet ja paikalliseen tietokantaan tallennetut havainnot. Niistä se laskee esimerkiksi päivän ohitukset ja lähimmän havainnon. Yhteenveto lähetetään pilvipalveluun noin 30 sekunnin välein, ja verkkosivu hakee sieltä uusimmat tiedot.</p>
+                <p>Vastaanottimen tarkkaa sijaintia ei näytetä sivulla eikä lähetetä pilvipalveluun. Pi laskee etäisyydet jo kotona. Siksi sivulla voi näkyä koneen etäisyys ilman, että antennin paikkaa tarvitsee julkaista.</p>
+                <p>Sivusto ei tarvitse suoraa yhteyttä kotiini. Selain kysyy tiedot pilvipalvelusta, jonne Pi on jo lähettänyt ne. Tämä tekee sivusta yksinkertaisen käyttää: avaan vain SkyScopen ja katson tuoreimmat havainnot.</p>
+              </section>
+              <section aria-labelledby="short-view">
+                <h4 id="short-view">Mitä sivulla voi katsoa?</h4>
+                <p>SkyScopessa näkyy ensin, onko vastaanotin yhteydessä. Sen jälkeen näen päivän yksilöllisten koneiden määrän, ohitusten määrän ja lähimmän havainnon. Alempana on lista juuri nyt kuulluista koneista sekä päivän ohituksista. Koneesta voi näkyä esimerkiksi kutsutunnus, konetyyppi, korkeus, nopeus ja etäisyys, jos tieto on saatavilla.</p>
+                <p>Joillekin lennoille näkyy myös tietokannasta löytyvä reitti. Se on kutsutunnukseen liitetty taustatieto, ei tämän lennon vahvistettu lentosuunnitelma. Jos reittiä ei löydy, sitä ei keksitä.</p>
+                <p>Yhteyden tila on tärkeä osa sivua. Jos vastaanottimelta ei tule uusia tietoja, se näkyy käyttäjälle. Näin vanhoja havaintoja ei ole tarkoitus lukea vahingossa tämänhetkiseksi tilanteeksi.</p>
+              </section>
+              <p class="project-closing">Halusin tehdä sivun, josta omat radiohavainnot voi nähdä helposti. Jos haluat katsoa tämänhetkistä tilannetta, <a href="/skyscope/">avaa SkyScope</a>.</p>
+            </div>
+          </div>
+
+          <div class="project-version" id="skyscope-long" data-version-panel="long" hidden>
+            <div class="project-reading-heading">
+              <p class="project-kicker">Teknisemmin · noin 15 min</p>
+              <h3>Miten rakensin SkyScopen?</h3>
+              <p>Tässä kerron koko ketjun antennista verkkosivulle. Olen pitänyt selityksen mahdollisimman tavallisena, vaikka mukana on myös teknisiä yksityiskohtia.</p>
+            </div>
+
+            <div class="project-long-layout">
+              <nav class="project-contents" aria-label="SkyScopen pidemmän esittelyn sisältö">
+                <p>Sisältö</p>
+                <a href="#idea">Idea</a>
+                <a href="#vastaanotto">Vastaanotto kotona</a>
+                <a href="#havainnot">Havainnot ja ohitukset</a>
+                <a href="#lahetys">Tietojen lähetys</a>
+                <a href="#esimerkki">Yhden havainnon matka</a>
+                <a href="#pilvi">Pilvipalvelu</a>
+                <a href="#verkkosivu">Verkkosivu</a>
+                <a href="#reitit">Reittitiedot</a>
+                <a href="#yksityisyys">Yksityisyys ja rajat</a>
+              </nav>
+
+              <div class="project-prose project-long-prose">
+                <section id="idea" aria-labelledby="idea-title">
+                  <h4 id="idea-title">Mistä idea lähti?</h4>
+                  <p>Kotonani on antenni ja vastaanotin, joilla kuulen lähellä lentävien koneiden radiosignaaleja. Halusin tehdä niistä oman näkymän: en pelkkää teknistä lukulistaa, vaan sivun, josta näkee nopeasti mitä lähitaivaalla tapahtuu. Siitä tuli SkyScope.</p>
+                  <p>Projektin perusajatus on yksinkertainen. Kotona oleva laite vastaanottaa havainnot. Pieni tietokone käsittelee ne. Verkkosivu näyttää tuloksen. Kun sivulla lukee, että kone on nähty tai kuultu, kyse on juuri oman vastaanottimeni havainnosta. Se ei ole yleinen lentoseuranta eikä lupaus siitä, että jokainen alueen kone näkyisi mukana.</p>
+                  <p>Halusin, että sama sivu toimii sekä nopeaan vilkaisuun että tarkempaan tutkimiseen. Siksi siinä on erikseen vastaanottimen tila, päivän luvut ja yksittäiset ohitukset. Päivän tilanne kertoo kokonaisuuden, mutta ohitusriveistä voi tarkistaa, mihin havaintoihin se perustuu.</p>
+                  <p>Pidin varsinaisen SkyScope-näkymän erillään tästä projektiesittelystä. SkyScope-sivulla voi katsoa havaintoja. Tällä sivulla selitän, miten näkymä syntyy ja mitä sen tiedoista voi päätellä.</p>
+                </section>
+
+                <section id="vastaanotto" aria-labelledby="vastaanotto-title">
+                  <h4 id="vastaanotto-title">1. Vastaanotto kotona</h4>
+                  <p>Monet lentokoneet lähettävät ADS-B-tietoja radiolla. Viesteissä voi olla esimerkiksi koneen tunnus, sijainti, korkeus, nopeus ja lentosuunta. Antenni vastaanottaa signaalin, ja Raspberry Pi:llä toimiva <code>readsb</code> kokoaa kuullut koneet tämänhetkiseen <code>aircraft.json</code>-tiedostoon.</p>
+                  <p>Kuuluminen riippuu signaalista ja siitä, mitä kone lähettää. Siksi havaintoja ei voi tulkita täydelliseksi luetteloksi alueen lentoliikenteestä. Jos koneelta saadaan tunnus mutta ei käyttökelpoista sijaintia, se voi silti näkyä SkyScopessa kohdassa ”Ilman sijaintia”. Silloin sille ei lasketa etäisyyttä.</p>
+                  <p>Jokaisella koneella ei ole sivulla nimeä tai reittiä. Kutsutunnus voi puuttua, ja koneen rekisteri- tai tyyppitiedot riippuvat paikallisen konetietokannan sisällöstä. Jätän puuttuvan tiedon puuttuvaksi sen sijaan, että täyttäisin aukot arvauksilla.</p>
+                  <p><code>readsb</code> antaa tämänhetkisen tilanteen. Erillinen paikallinen havaintokanta säilyttää ajallisen historian, jota tarvitsen ohitusten muodostamiseen. Näillä on eri tehtävä: tämänhetkinen tiedosto kertoo, mitä kuulen juuri nyt, ja tietokanta kertoo, mitä olen kuullut aiemmin. Jos vain toinen olisi käytössä, sivulta puuttuisi joko live-tilanne tai päivän historia.</p>
+                  <p>SkyScopen lähetysohjelma avaa paikallisen havaintokannan vain lukemista varten. Sen tehtävä ei ole muuttaa alkuperäisiä havaintoja, vaan poimia niistä verkkosivulle sopivat yhteenvedot. Tämänhetkisen tilanteen ohjelma lukee <code>readsb</code>:n JSON-tiedostosta erikseen, koska se sisältää juuri nyt kuultujen koneiden tuoreimmat tiedot.</p>
+                </section>
+
+                <section id="havainnot" aria-labelledby="havainnot-title">
+                  <h4 id="havainnot-title">2. Havaintojen muuttaminen ohituksiksi</h4>
+                  <p>Pi:llä on myös paikallinen SQLite-tietokanta, johon on tallennettu havaintoja ajan kanssa. SkyScopen lähetysohjelma lukee siitä viimeaikaiset havainnot. Se ei lähetä koko havaintokantaa verkkosivulle, vaan muodostaa niistä tiiviin yhteenvedon.</p>
+                  <p>Ohitus tarkoittaa tässä usean peräkkäisen havainnon muodostamaa jaksoa samasta koneesta. Ohjelma ryhmittelee havainnot koneen ICAO-tunnuksen ja havaintoajan perusteella. Jos saman koneen havaintojen väli kasvaa yli 15 minuuttiin, seuraava havainto aloittaa uuden ohituksen. Näin yksi pidempi näkyminen ei muutu kymmeniksi erillisiksi riveiksi.</p>
+                  <p>Ohitukselle tallentuvat ensimmäinen ja viimeinen havainto sekä lähin laskettu etäisyys. Jos korkeustietoa on, mukaan tulevat myös jakson pienin ja suurin korkeus. Ohitus saa pysyvän tunnisteen koneen tunnuksesta ja ensimmäisen havainnon ajasta, jotta samaa ohitusta voidaan päivittää ilman että se tallentuu joka lähetyksellä uutena.</p>
+                  <p>Pi laskee lisäksi päivän luvut Suomen ajan mukaan: montako eri konetta on havaittu, montako ohitusta on muodostunut ja mikä havainto on ollut lähimpänä. Nämä ovat oman vastaanottimen lukuja, eivät koko lentoliikenteen tilastoja.</p>
+                  <p>”Eri kone” perustuu koneen ICAO-tunnukseen. Ohitusten määrä voi olla suurempi kuin eri koneiden määrä, koska sama kone voi näkyä useammin kuin kerran päivän aikana. Lähin havainto taas vaatii käyttökelpoisen sijaintitiedon; ilman sitä etäisyyttä ei voi laskea. Nämä erot selittävät, miksi sivun luvut eivät aina ole samat.</p>
+                  <p>Etäisyys lasketaan koneen lähettämän sijainnin ja kotona säilyvän vastaanottimen sijainnin välille. Jos kone ei lähetä sijaintia, ohitukselle voi silti tallentua aika ja tunnus, mutta lähintä etäisyyttä ei näytetä. Samoin korkeusvaihteluväli näkyy vain silloin, kun havaintojen mukana on korkeustietoa. Sivun tyhjät kentät ovat siis osa oikeaa havaintoaineistoa.</p>
+                </section>
+
+                <section id="lahetys" aria-labelledby="lahetys-title">
+                  <h4 id="lahetys-title">3. Tietojen lähetys Pi:ltä</h4>
+                  <p>Pi:llä oleva Python-ohjelma kokoaa tämänhetkiset koneet, ohitukset ja päivän tilastot yhdeksi tietopaketiksi. Ajastin käynnistää ohjelman noin 30 sekunnin välein. Yksi ajo tekee yhden lähetyksen, joten taustalla ei tarvitse pitää erillistä jatkuvasti pyörivää Python-prosessia.</p>
+                  <p>Jos koneen sijainti on saatavilla, Pi laskee etäisyyden vastaanottimeen. Laskuun käytetään antennin koordinaatteja vain Pi:llä. Pilveen lähtee laskettu etäisyys ja koneen lähettämä sijainti, mutta ei vastaanottimen tai antennin koordinaatteja. Tämän eron halusin pitää selvänä, koska sivulla näkyvä etäisyys ei vaadi oman sijaintini julkaisemista.</p>
+                  <p>Lähetys kulkee HTTPS-yhteydellä Cloudflare Workerille. Mukana on salainen tunniste, jonka Worker tarkistaa ennen tietojen vastaanottamista. Tunniste on Pi:n ja Workerin asetuksissa; sitä ei laiteta julkiseen verkkosivun JavaScriptiin. Jos lähetys epäonnistuu, ohjelma kirjaa virheen ja seuraava ajastettu ajo yrittää uudelleen.</p>
+                  <p>Lähetettävä paketti sisältää vain rajatun määrän viimeaikaisia ohituksia sekä tämänhetkiset koneet ja päivän tilastot. Vanha paikallinen havaintokanta ei siirry kokonaisena pilveen. Tämä pitää siirron pienenä ja erottaa kotona säilyvän alkuperäisen aineiston julkisen sivun tarvitsemasta yhteenvedosta.</p>
+                  <p>Ohjelma lukee oletuksena enintään viimeisen 48 tunnin havaintoja ohitusten muodostamista varten ja lähettää rajatun määrän uusimpia ohituksia kerrallaan. Päivän luvut se laskee silti kuluvan päivän havainnoista. Näin vanhempaa historiaa ei tarvitse lähettää jokaisella puolen minuutin kierroksella uudestaan. Jos tietoja ei saada luettua tai lähetys epäonnistuu, vanhaa tilannetta ei korvata keksityillä luvuilla.</p>
+                </section>
+
+                <div class="project-flow" aria-label="SkyScopen tiedon kulku">
+                  <span>Antenni ja vastaanotin</span>
+                  <span>Raspberry Pi</span>
+                  <span>Cloudflare Worker ja D1</span>
+                  <span>SkyScope-verkkosivu</span>
+                </div>
+
+                <section id="esimerkki" aria-labelledby="esimerkki-title">
+                  <h4 id="esimerkki-title">Yhden havainnon matka</h4>
+                  <p>Ajatellaan, että lentokone kuuluu antennille ensimmäistä kertaa. <code>readsb</code> lisää sen tämänhetkisten koneiden joukkoon. Jos viestissä on sijainti, Pi voi laskea etäisyyden. Jos mukana on vain tunnus, kone voi silti näkyä ilman sijaintia. Kumpaakaan tilannetta ei tarvitse täydentää arvauksella.</p>
+                  <p>Kun havaintoja kertyy, paikalliseen tietokantaan tallentunut historia kertoo, milloin kone näkyi ensimmäisen ja viimeisen kerran. Lähetysohjelma yhdistää samasta koneesta lähellä toisiaan tehdyt havainnot yhdeksi ohitukseksi. Jos kone häviää pitkäksi aikaa ja kuuluu myöhemmin uudelleen, uusi jakso voi olla uusi ohitus.</p>
+                  <p>Seuraavalla ajastetulla lähetyksellä Pi vie tuoreen yhteenvedon Workerille. Worker tallentaa sen D1:een. Kun avaan SkyScope-sivun, selain hakee sieltä nykytilan ja päivän historian. Tämä tapahtuu ilman että sivun vierailija pyytää mitään suoraan Pi:ltä. Sama ketju toistuu uusien havaintojen mukana.</p>
+                </section>
+
+                <section id="pilvi" aria-labelledby="pilvi-title">
+                  <h4 id="pilvi-title">4. Mitä pilvipalvelu tekee?</h4>
+                  <p>Cloudflare Worker ottaa Pi:n lähettämän tietopaketin vastaan. Ennen tallennusta se tarkistaa tunnisteen, tietojen rakenteen ja kokorajat. Tällä rajataan pois virheelliset tai liian suuret lähetykset. Worker tallentaa tiedot Cloudflaren D1-tietokantaan.</p>
+                  <p>D1:ssä säilyvät vastaanottimen viimeisin tilanne, koneisiin liittyviä saatavilla olevia taustatietoja, päivän tilastot ja yhteenvedot ohituksista. Pi:n kaikkia yksittäisiä raakahavaintoja ei kopioida sinne. Jos sama ohitus tarkentuu myöhemmin, tietokannan riviä päivitetään esimerkiksi myöhemmällä viimeisellä havaintoajalla tai pienemmällä etäisyydellä.</p>
+                  <p>Workerilla on eri tehtävät lähettävälle Pi:lle ja lukevalle selaimelle. Pi käyttää suojattua vastaanottoreittiä. Sivun vierailija saa vain julkiset lukutiedot eikä voi lähettää uusia havaintoja. Kun Pi lähettää uuden paketin, Worker tarkistaa sen ja päivittää D1:n. Selaimen pyyntöihin Worker vastaa jo tallennetusta tilanteesta.</p>
+                  <p>Viimeisin live-tilanne tallennetaan yhtenä vastaanottimen tilana. Ohitukset ja päivittäiset luvut ovat omissa tietokannan tauluissaan, koska niitä halutaan lukea myös myöhemmin saman päivän aikana. Vanha lähetys ei saa syrjäyttää tuoreempaa live-tilannetta. Ohituksissa taas sama pysyvä tunniste auttaa täydentämään olemassa olevaa riviä, kun koneesta saadaan uusi havainto.</p>
+                  <p>Worker tarjoaa verkkosivulle erilliset julkiset lukureitit yhteyden tilaa, tämänhetkisiä koneita, ohituksia ja tilastoja varten. Selain ei ota yhteyttä kotiini tai Raspberry Pi:hin. Se kysyy valmiiksi käsitellyt tiedot Workerilta. Näin oma kotiverkkoni ei tarvitse avointa julkista sivupalvelinta.</p>
+                </section>
+
+                <section id="verkkosivu" aria-labelledby="verkkosivu-title">
+                  <h4 id="verkkosivu-title">5. Mitä verkkosivu näyttää?</h4>
+                  <p>SkyScopen näkyvä osa on tavallinen GitHub Pagesissa oleva HTML-, CSS- ja JavaScript-sivu. Selain hakee Workerin tiedot sivun avautuessa ja päivittää ne noin 30 sekunnin välein. Sivulla on vastaanottimen tila, päivän luvut, juuri nyt kuullut koneet ja päivän ohitukset.</p>
+                  <p>Vastaanottimen tila kertoo, onko tuoreita tietoja saapunut. Jos yhteys katkeaa, sivu voi näyttää viimeksi onnistuneesti haetut tiedot ja ilmoittaa, etteivät ne ole enää tuoreita. Näin vanhaa tilannetta ei esitetä huomaamatta tämänhetkisenä.</p>
+                  <p>Konekorteissa näkyy vain saatavilla olevia kenttiä. Korkeus muutetaan sivulla jaloista metreiksi ja nopeus solmuista kilometreiksi tunnissa. Jos sijainti on tiedossa, näytetään myös Pi:llä laskettu etäisyys. Päivän ohituslistaa voi avata tarkemmin, jolloin näkee esimerkiksi havaintojen alku- ja loppuajan, lähimmän hetken sekä korkeuden vaihteluvälin.</p>
+                  <p>Lista ei ole kartta eikä lentoyhtiöiden virallinen aikataulu. Se kertoo, mitä oma vastaanotin on saanut talteen. Sivun luvut vaihtuvat päivän ja kuuluvuuden mukaan.</p>
+                  <p>Sivulla on erilliset listat koneille, joiden sijainti on saatavilla, ja koneille, joiden sijaintia ei ole. Päivän ohituksissa yhden rivin voi avata ja sulkea ilman että muu lista katoaa. Ajat näytetään Suomen aikavyöhykkeessä, jotta päivän tilastot ja kellonajat ovat keskenään ymmärrettäviä.</p>
+                  <p>Selain hakee yhteyden tilan, nykyiset koneet, päivän ohitukset ja tilastot erillisistä rajapinnan osoitteista. Jos ohituksia on enemmän kuin yhdelle sivulle mahtuu, se pyytää seuraavat erät. Tämän ansiosta päivästä voidaan näyttää kaikki tarjolla olevat ohitukset ilman, että yksi vastaus kasvaa tarpeettoman suureksi. Koko käyttöliittymä on tehty tavallisella JavaScriptillä ilman erillistä sovelluskehystä.</p>
+                </section>
+
+                <section id="reitit" aria-labelledby="reitit-title">
+                  <h4 id="reitit-title">6. Mistä mahdollinen reitti tulee?</h4>
+                  <p>Osalle kutsutunnuksista näytetään myös reittitieto. Tämä tieto ei tule lentokoneen ADS-B-viestistä. Worker hakee sitä erillisestä kutsutunnusten reittitietokannasta ja säilyttää tuloksen välimuistissa. Haku tehdään taustalla rajatusti, eikä selain tai Pi tee sitä jokaisen sivulatauksen yhteydessä.</p>
+                  <p>Reitti tarkoittaa kutsutunnukseen liitettyä tietokantareittiä. Se voi auttaa hahmottamaan, mihin lentoon tunnus tavallisesti liittyy, mutta se ei todista tämän yksittäisen koneen juuri nyt lentämää reittiä. Se ei ole vahvistettu lentosuunnitelma eikä seurantakartta. SkyScope näyttää tiedon vain silloin, kun se löytyy ja on käyttökelpoinen. Muuten sivulla lukee, ettei reittiä tiedetä.</p>
+                  <p>Taustalla oleva ajastettu haku käsittelee uusia kutsutunnuksia vähitellen. Löydetyt tiedot tallentuvat välimuistiin, jotta samaa tietoa ei tarvitse hakea joka kerta uudelleen. Ohituksen yhteyteen voidaan tallentaa kopio silloin käytetystä reitistä. Näin myöhempi muutos tietokannassa ei muuta vanhaa ohitusta huomaamatta.</p>
+                  <p>Reittien lähteenä on VRS standing-data -aineisto, jota käytetään ADSB.lol-palvelun tarjoamina pieninä kutsutunnuskohtaisina tiedostoina. Worker tarkistaa, että vastaus sopii haettuun kutsutunnukseen ja että lentoasemien tiedot ovat järkevässä muodossa. Jos vastaus ei täytä ehtoja tai tietoa ei löydy, sitä ei näytetä reittinä. Reittihaku ei siis ole yhtä reaaliaikainen kuin antennin oma havainto.</p>
+                  <p>Pidän tämän eron tärkeänä: vastaanottimen oma havainto ja ulkoisen tietokannan taustatieto ovat kaksi eri asiaa. Ne näytetään samalla sivulla, mutta niitä ei pidä sekoittaa toisiinsa.</p>
+                </section>
+
+                <section id="yksityisyys" aria-labelledby="yksityisyys-title">
+                  <h4 id="yksityisyys-title">7. Yksityisyys ja tiedon rajat</h4>
+                  <p>SkyScope näyttää oman laitteeni havaitsemaa radiodataa. Vastaanottimen tarkat koordinaatit pysyvät Pi:llä. Pilveen lähetetään vain verkkosivua varten tarvittava yhteenveto sekä lentokoneen oma julkinen sijainti silloin, kun se on saatavilla. Antennin koordinaatteja ei julkaista sivulla.</p>
+                  <p>Tiedon puuttuminen on SkyScopessa normaalia. Osa koneista ei lähetä käyttökelpoista sijaintia, osa ei näy antennille, ja joistakin puuttuvat kutsutunnus tai konetyyppi. Myös reittitietokanta voi olla puutteellinen. Siksi sivu näyttää tuntemattoman tiedon tuntemattomana. Jos paikallinen konetietokanta merkitsee koneen sotilaskoneeksi, merkintä on vain tietokannan luokitus, ei varma tunnistus. Kaikki sotilaskoneet eivät myöskään näy ADS-B:llä.</p>
+                  <p>SkyScope on minulle tapa tehdä oman vastaanottimen havainnoista ymmärrettävä sivu. Sen vahvuus on juuri siinä, että näen mistä luvut tulevat ja mitä ne tarkoittavat. <a href="/skyscope/">SkyScope-näkymästä</a> voi katsoa tämänhetkiset tiedot itse.</p>
+                </section>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>© 2026 Noel Jeromaa</p>
+        <p>Kaikki oikeudet pidätetään</p>
+      </div>
+    </footer>
+    <script src="projektit.js" defer></script>
+  </body>
+</html>
