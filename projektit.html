@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#07070b">
     <title>Projektit | Noel Jeromaa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="projektit.css?v=20260926-4">
+    <link rel="stylesheet" href="projektit.css?v=20260926-5">
   </head>
   <body class="projects-page">
     <header class="site-header">
@@ -87,25 +87,6 @@
             </div>
           </div>
 
-          <section class="project-screenshots" aria-labelledby="project-screenshots-title">
-            <h3 id="project-screenshots-title">Kuvakaappauksia SkyScopesta</h3>
-            <p>Kuvat saa avattua suurempina.</p>
-            <div class="project-screenshot-list">
-              <figure class="project-screenshot">
-                <a href="images/skyscope-kuullut-lentokoneet.png" target="_blank" rel="noopener" aria-label="Avaa Kuullut lentokoneet -kuvakaappaus suurempana">
-                  <img src="images/skyscope-kuullut-lentokoneet.png" alt="SkyScopen Kuullut lentokoneet -osiossa näkyy yksi havaittu kone ja sen tiedot." width="1151" height="606" loading="lazy" decoding="async">
-                </a>
-                <figcaption>Juuri nyt kuultu kone ja sen tiedot.</figcaption>
-              </figure>
-              <figure class="project-screenshot">
-                <a href="images/skyscope-paivan-ohitukset.png" target="_blank" rel="noopener" aria-label="Avaa Päivän ohitukset -kuvakaappaus suurempana">
-                  <img src="images/skyscope-paivan-ohitukset.png" alt="SkyScopen Päivän ohitukset -osiossa näkyy 11 havaittua ohitusta aikojen ja etäisyyksien kanssa." width="1169" height="832" loading="lazy" decoding="async">
-                </a>
-                <figcaption>Päivän ohitukset listana.</figcaption>
-              </figure>
-            </div>
-          </section>
-
           <div class="project-version" id="skyscope-short" data-version-panel="short">
             <div class="project-reading-heading">
               <p class="project-kicker">Lyhyesti · noin 3 min</p>
@@ -127,6 +108,21 @@
               <section aria-labelledby="short-view">
                 <h4 id="short-view">Mitä sivulla voi katsoa?</h4>
                 <p>SkyScopessa näkyy ensin, onko vastaanotin yhteydessä. Sen jälkeen näen päivän yksilöllisten koneiden määrän, ohitusten määrän ja lähimmän havainnon. Alempana on lista juuri nyt kuulluista koneista sekä päivän ohituksista. Koneesta voi näkyä esimerkiksi kutsutunnus, konetyyppi, korkeus, nopeus ja etäisyys, jos tieto on saatavilla.</p>
+                <figure class="project-example">
+                  <a href="images/skyscope-kuullut-lentokoneet.png" target="_blank" rel="noopener" aria-label="Avaa kuullun lentokoneen kuvakaappaus suurempana">
+                    <img src="images/skyscope-kuullut-lentokoneet.png" alt="SkyScopen Kuullut lentokoneet -osio, jossa näkyy yksi kone ja sen tiedot." width="1151" height="606" loading="lazy" decoding="async">
+                    <span>Avaa suurempana ↗</span>
+                  </a>
+                  <figcaption>Tässä näkyy yksi juuri nyt kuultu kone. Kortissa on vain ne tiedot, joita siitä on saatu.</figcaption>
+                </figure>
+                <p>Päivän ohitukset näkyvät omana listanaan. Samasta koneesta voi kertyä päivän aikana useampi ohitus, eikä jokaiselle saada etäisyyttä.</p>
+                <figure class="project-example">
+                  <a href="images/skyscope-paivan-ohitukset.png" target="_blank" rel="noopener" aria-label="Avaa päivän ohitusten kuvakaappaus suurempana">
+                    <img src="images/skyscope-paivan-ohitukset.png" alt="SkyScopen Päivän ohitukset -osio, jossa näkyy 11 ohitusta." width="1169" height="832" loading="lazy" decoding="async">
+                    <span>Avaa suurempana ↗</span>
+                  </a>
+                  <figcaption>Listassa näkyvät havaittujen ohitusten ajat. Etäisyys puuttuu, jos koneelta ei saatu sijaintia.</figcaption>
+                </figure>
                 <p>Joillekin lennoille näkyy myös tietokannasta löytyvä reitti. Se on kutsutunnukseen liitetty taustatieto, ei tämän lennon vahvistettu lentosuunnitelma. Jos reittiä ei löydy, sitä ei keksitä.</p>
                 <p>Yhteyden tila on tärkeä osa sivua. Jos vastaanottimelta ei tule uusia tietoja, se näkyy käyttäjälle. Näin vanhoja havaintoja ei ole tarkoitus lukea vahingossa tämänhetkiseksi tilanteeksi.</p>
               </section>
@@ -219,9 +215,23 @@
                   <h4 id="verkkosivu-title">5. Mitä verkkosivu näyttää?</h4>
                   <p>SkyScopen näkyvä osa on tavallinen GitHub Pagesissa oleva HTML-, CSS- ja JavaScript-sivu. Selain hakee Workerin tiedot sivun avautuessa ja päivittää ne noin 30 sekunnin välein. Sivulla on vastaanottimen tila, päivän luvut, juuri nyt kuullut koneet ja päivän ohitukset.</p>
                   <p>Vastaanottimen tila kertoo, onko tuoreita tietoja saapunut. Jos yhteys katkeaa, sivu voi näyttää viimeksi onnistuneesti haetut tiedot ja ilmoittaa, etteivät ne ole enää tuoreita. Näin vanhaa tilannetta ei esitetä huomaamatta tämänhetkisenä.</p>
-                  <p>Konekorteissa näkyy vain saatavilla olevia kenttiä. Korkeus muutetaan sivulla jaloista metreiksi ja nopeus solmuista kilometreiksi tunnissa. Jos sijainti on tiedossa, näytetään myös Pi:llä laskettu etäisyys. Päivän ohituslistaa voi avata tarkemmin, jolloin näkee esimerkiksi havaintojen alku- ja loppuajan, lähimmän hetken sekä korkeuden vaihteluvälin.</p>
+                  <p>Konekorteissa näkyy vain saatavilla olevia kenttiä. Korkeus muutetaan sivulla jaloista metreiksi ja nopeus solmuista kilometreiksi tunnissa. Jos sijainti on tiedossa, näytetään myös Pi:llä laskettu etäisyys.</p>
+                  <figure class="project-example">
+                    <a href="images/skyscope-kuullut-lentokoneet.png" target="_blank" rel="noopener" aria-label="Avaa kuullun lentokoneen kuvakaappaus suurempana">
+                      <img src="images/skyscope-kuullut-lentokoneet.png" alt="Konekortti, jossa näkyvät tunnus, konetyyppi, korkeus, nopeus, suunta, signaali ja etäisyys." width="1151" height="606" loading="lazy" decoding="async">
+                      <span>Avaa suurempana ↗</span>
+                    </a>
+                    <figcaption>Tässä kortissa korkeus ja nopeus on muutettu helpommin luettaviin yksiköihin. Etäisyys on laskettu Pi:llä. Kuopio–Helsinki on tietokannasta löytynyt reittitieto.</figcaption>
+                  </figure>
+                  <p>Sivulla on erilliset listat koneille, joiden sijainti on saatavilla, ja koneille, joiden sijaintia ei ole. Päivän ohituksissa yhden rivin voi avata ja sulkea ilman että muu lista katoaa. Avatusta rivistä näkee esimerkiksi havaintojen alku- ja loppuajan, lähimmän hetken sekä korkeuden vaihteluvälin. Ajat näytetään Suomen aikavyöhykkeessä.</p>
+                  <figure class="project-example">
+                    <a href="images/skyscope-paivan-ohitukset.png" target="_blank" rel="noopener" aria-label="Avaa päivän ohitusten kuvakaappaus suurempana">
+                      <img src="images/skyscope-paivan-ohitukset.png" alt="Päivän ohitusten lista, jossa osa etäisyyksistä puuttuu sijaintitiedon puuttuessa." width="1169" height="832" loading="lazy" decoding="async">
+                      <span>Avaa suurempana ↗</span>
+                    </a>
+                    <figcaption>Yksi rivi tarkoittaa yhtä muodostettua ohitusta. Riviä avaamalla näkee tarkemmat havainnot. Jos sijaintia ei saatu, etäisyyden kohdalla lukee ”Etäisyys ei tiedossa”.</figcaption>
+                  </figure>
                   <p>Lista ei ole kartta eikä lentoyhtiöiden virallinen aikataulu. Se kertoo, mitä oma vastaanotin on saanut talteen. Sivun luvut vaihtuvat päivän ja kuuluvuuden mukaan.</p>
-                  <p>Sivulla on erilliset listat koneille, joiden sijainti on saatavilla, ja koneille, joiden sijaintia ei ole. Päivän ohituksissa yhden rivin voi avata ja sulkea ilman että muu lista katoaa. Ajat näytetään Suomen aikavyöhykkeessä, jotta päivän tilastot ja kellonajat ovat keskenään ymmärrettäviä.</p>
                   <p>Selain hakee yhteyden tilan, nykyiset koneet, päivän ohitukset ja tilastot erillisistä rajapinnan osoitteista. Jos ohituksia on enemmän kuin yhdelle sivulle mahtuu, se pyytää seuraavat erät. Tämän ansiosta päivästä voidaan näyttää kaikki tarjolla olevat ohitukset ilman, että yksi vastaus kasvaa tarpeettoman suureksi. Koko käyttöliittymä on tehty tavallisella JavaScriptillä ilman erillistä sovelluskehystä.</p>
                 </section>
 
