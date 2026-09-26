@@ -1,4 +1,114 @@
 /* Vain Projektit-sivun asettelu. Sivuston yhteiset värit ja taustat tulevat styles.css:stä. */
+.projects-page .project-browser-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.projects-page .project-browser-heading h2 {
+  margin: 0 0 9px;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+}
+
+.projects-page .project-browser-heading p:last-child {
+  margin: 0;
+}
+
+.projects-page .project-browser-controls {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.projects-page .project-browser-controls button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(7, 7, 11, 0.68);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.projects-page .project-browser-controls button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.projects-page .project-browser-controls button:disabled {
+  opacity: 0.36;
+  cursor: default;
+}
+
+.projects-page .project-browser-controls span {
+  min-width: 61px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.projects-page .project-browser-track {
+  display: flex;
+  gap: 14px;
+  width: min(100%, 640px);
+  margin-top: 26px;
+  padding: 2px 2px 13px;
+  overflow-x: auto;
+  scrollbar-color: #746777 transparent;
+  scrollbar-width: thin;
+}
+
+.projects-page .project-browser-item {
+  display: flex;
+  flex: 0 0 min(82%, 360px);
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 136px;
+  padding: 19px 21px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.projects-page .project-browser-item.is-current {
+  border-color: rgba(255, 138, 61, 0.55);
+}
+
+.projects-page .project-browser-item.is-current:hover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.projects-page .project-browser-item.is-upcoming {
+  border-style: dashed;
+}
+
+.projects-page .project-browser-item strong {
+  font-size: 1.38rem;
+  line-height: 1.15;
+}
+
+.projects-page .project-browser-item > span:last-child {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.projects-page .project-browser-number {
+  color: #ffc274;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
 .projects-page .project-list {
   display: grid;
   gap: 32px;
@@ -6,6 +116,7 @@
 
 .projects-page .project-card {
   min-width: 0;
+  scroll-margin-top: 104px;
 }
 
 .projects-page .project-overview {
@@ -81,14 +192,6 @@
 .projects-page .project-version-button:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 4px;
-}
-
-.projects-page .project-live-link {
-  color: #ffc274;
-  font-weight: 750;
-  text-decoration-color: var(--accent-2);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 5px;
 }
 
 .projects-page .project-gallery {
@@ -320,6 +423,15 @@
 }
 
 @media (max-width: 560px) {
+  .projects-page .project-browser-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .projects-page .project-browser-controls {
+    align-self: flex-end;
+  }
+
   .projects-page .project-gallery {
     gap: 9px;
   }

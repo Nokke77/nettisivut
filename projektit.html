@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#07070b">
     <title>Projektit | Noel Jeromaa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="projektit.css">
+    <link rel="stylesheet" href="projektit.css?v=20260926-3">
   </head>
   <body class="projects-page">
     <header class="site-header">
@@ -17,7 +17,6 @@
           <a href="index.html">Etusivu</a>
           <a href="tietoaminusta.html">Tietoa minusta</a>
           <a href="projektit.html" aria-current="page">Projektit</a>
-          <a href="/skyscope/">SkyScope</a>
           <a href="yhteystiedot.html">Yhteystiedot</a>
         </nav>
       </div>
@@ -31,8 +30,35 @@
         </div>
       </header>
 
-      <!-- Lisää seuraava projekti omana project-card-artikkelinaan project-listin sisään. -->
+      <!-- Lisää uusi project-browser-item, oma project-card-artikkeli ja siirrä Tulossa-kortti seuraavaan numeroon. -->
       <div class="content project-list">
+        <section class="card project-browser" aria-labelledby="project-browser-title">
+          <div class="project-browser-heading">
+            <div>
+              <p class="project-kicker">Projektit järjestyksessä</p>
+              <h2 id="project-browser-title">Ensimmäinen projekti on täällä</h2>
+              <p>SkyScope aloittaa listan. Lisää projekteja on tulossa.</p>
+            </div>
+            <div class="project-browser-controls" aria-label="Selaa projekteja">
+              <button type="button" data-project-prev aria-label="Edellinen projekti" disabled>←</button>
+              <span data-project-position aria-live="polite">01 / 02</span>
+              <button type="button" data-project-next aria-label="Seuraava projekti">→</button>
+            </div>
+          </div>
+          <div class="project-browser-track" data-project-track tabindex="0" aria-label="Projektit ja tulevat projektit">
+            <a class="project-browser-item is-current" href="#skyscope-projekti">
+              <span class="project-browser-number">01</span>
+              <strong>SkyScope</strong>
+              <span>Ensimmäinen projekti <span aria-hidden="true">↗</span></span>
+            </a>
+            <div class="project-browser-item is-upcoming">
+              <span class="project-browser-number">02</span>
+              <strong>Seuraava projekti</strong>
+              <span>Tulossa</span>
+            </div>
+          </div>
+        </section>
+
         <article class="card project-card" id="skyscope-projekti" aria-labelledby="skyscope-title">
           <div class="project-overview">
             <div class="project-intro">
@@ -44,7 +70,6 @@
                 <button class="project-version-button is-active" type="button" data-version="short" aria-controls="skyscope-short" aria-pressed="true">Lyhyesti <span>· noin 3 min</span></button>
                 <button class="project-version-button" type="button" data-version="long" aria-controls="skyscope-long" aria-pressed="false">Teknisemmin <span>· noin 15 min</span></button>
               </div>
-              <a class="project-live-link" href="/skyscope/">Avaa SkyScope <span aria-hidden="true">→</span></a>
             </div>
 
             <div class="project-gallery" aria-label="Tulevat SkyScope-kuvat">
@@ -95,7 +120,7 @@
                 <p>Joillekin lennoille näkyy myös tietokannasta löytyvä reitti. Se on kutsutunnukseen liitetty taustatieto, ei tämän lennon vahvistettu lentosuunnitelma. Jos reittiä ei löydy, sitä ei keksitä.</p>
                 <p>Yhteyden tila on tärkeä osa sivua. Jos vastaanottimelta ei tule uusia tietoja, se näkyy käyttäjälle. Näin vanhoja havaintoja ei ole tarkoitus lukea vahingossa tämänhetkiseksi tilanteeksi.</p>
               </section>
-              <p class="project-closing">Halusin tehdä sivun, josta omat radiohavainnot voi nähdä helposti. Jos haluat katsoa tämänhetkistä tilannetta, <a href="/skyscope/">avaa SkyScope</a>.</p>
+              <p class="project-closing">Halusin tehdä sivun, josta omat radiohavainnot voi nähdä helposti. SkyScope kokoaa ne yhteen ja näyttää, miten päivän tilanne muuttuu.</p>
             </div>
           </div>
 
@@ -203,7 +228,7 @@
                   <h4 id="yksityisyys-title">7. Yksityisyys ja tiedon rajat</h4>
                   <p>SkyScope näyttää oman laitteeni havaitsemaa radiodataa. Vastaanottimen tarkat koordinaatit pysyvät Pi:llä. Pilveen lähetetään vain verkkosivua varten tarvittava yhteenveto sekä lentokoneen oma julkinen sijainti silloin, kun se on saatavilla. Antennin koordinaatteja ei julkaista sivulla.</p>
                   <p>Tiedon puuttuminen on SkyScopessa normaalia. Osa koneista ei lähetä käyttökelpoista sijaintia, osa ei näy antennille, ja joistakin puuttuvat kutsutunnus tai konetyyppi. Myös reittitietokanta voi olla puutteellinen. Siksi sivu näyttää tuntemattoman tiedon tuntemattomana. Jos paikallinen konetietokanta merkitsee koneen sotilaskoneeksi, merkintä on vain tietokannan luokitus, ei varma tunnistus. Kaikki sotilaskoneet eivät myöskään näy ADS-B:llä.</p>
-                  <p>SkyScope on minulle tapa tehdä oman vastaanottimen havainnoista ymmärrettävä sivu. Sen vahvuus on juuri siinä, että näen mistä luvut tulevat ja mitä ne tarkoittavat. <a href="/skyscope/">SkyScope-näkymästä</a> voi katsoa tämänhetkiset tiedot itse.</p>
+                  <p>SkyScope on minulle tapa tehdä oman vastaanottimen havainnoista ymmärrettävä sivu. Sen vahvuus on juuri siinä, että näen mistä luvut tulevat ja mitä ne tarkoittavat.</p>
                 </section>
               </div>
             </div>
@@ -218,6 +243,6 @@
         <p>Kaikki oikeudet pidätetään</p>
       </div>
     </footer>
-    <script src="projektit.js" defer></script>
+    <script src="projektit.js?v=20260926-4" defer></script>
   </body>
 </html>
