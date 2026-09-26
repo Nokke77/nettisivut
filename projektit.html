@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#07070b">
     <title>Projektit | Noel Jeromaa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="projektit.css?v=20260926-3">
+    <link rel="stylesheet" href="projektit.css?v=20260926-4">
   </head>
   <body class="projects-page">
     <header class="site-header">
@@ -73,29 +73,38 @@
               </div>
             </div>
 
-            <div class="project-gallery" aria-label="Tulevat SkyScope-kuvat">
+            <div class="project-gallery" aria-label="Tulevat laitekuvat">
               <div class="project-image-slot project-image-slot-wide" role="img" aria-label="Paikka tulevalle kuvalle kotona olevasta antennista">
                 <span class="project-image-icon" aria-hidden="true"></span>
                 <strong>Antenni kotona</strong>
                 <span>Kuva lisätään myöhemmin</span>
               </div>
-              <div class="project-image-slot" role="img" aria-label="Paikka tulevalle Raspberry Pi -kuvalle">
+              <div class="project-image-slot project-image-slot-wide project-image-slot-compact" role="img" aria-label="Paikka tulevalle Raspberry Pi -kuvalle">
                 <span class="project-image-icon" aria-hidden="true"></span>
                 <strong>Raspberry Pi</strong>
                 <span>Kuva lisätään myöhemmin</span>
               </div>
-              <div class="project-image-slot" role="img" aria-label="Paikka tulevalle SkyScopen nykytilan kuvakaappaukselle">
-                <span class="project-image-icon" aria-hidden="true"></span>
-                <strong>SkyScope-näkymä</strong>
-                <span>Kuvakaappaus lisätään myöhemmin</span>
-              </div>
-              <div class="project-image-slot project-image-slot-wide project-image-slot-compact" role="img" aria-label="Paikka tulevalle päivän ohitusten kuvakaappaukselle">
-                <span class="project-image-icon" aria-hidden="true"></span>
-                <strong>Päivän ohitukset</strong>
-                <span>Kuvakaappaus lisätään myöhemmin</span>
-              </div>
             </div>
           </div>
+
+          <section class="project-screenshots" aria-labelledby="project-screenshots-title">
+            <h3 id="project-screenshots-title">Kuvakaappauksia SkyScopesta</h3>
+            <p>Kuvat saa avattua suurempina.</p>
+            <div class="project-screenshot-list">
+              <figure class="project-screenshot">
+                <a href="images/skyscope-kuullut-lentokoneet.png" target="_blank" rel="noopener" aria-label="Avaa Kuullut lentokoneet -kuvakaappaus suurempana">
+                  <img src="images/skyscope-kuullut-lentokoneet.png" alt="SkyScopen Kuullut lentokoneet -osiossa näkyy yksi havaittu kone ja sen tiedot." width="1151" height="606" loading="lazy" decoding="async">
+                </a>
+                <figcaption>Juuri nyt kuultu kone ja sen tiedot.</figcaption>
+              </figure>
+              <figure class="project-screenshot">
+                <a href="images/skyscope-paivan-ohitukset.png" target="_blank" rel="noopener" aria-label="Avaa Päivän ohitukset -kuvakaappaus suurempana">
+                  <img src="images/skyscope-paivan-ohitukset.png" alt="SkyScopen Päivän ohitukset -osiossa näkyy 11 havaittua ohitusta aikojen ja etäisyyksien kanssa." width="1169" height="832" loading="lazy" decoding="async">
+                </a>
+                <figcaption>Päivän ohitukset listana.</figcaption>
+              </figure>
+            </div>
+          </section>
 
           <div class="project-version" id="skyscope-short" data-version-panel="short">
             <div class="project-reading-heading">
