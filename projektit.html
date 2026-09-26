@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#07070b">
     <title>Projektit | Noel Jeromaa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="projektit.css?v=20260926-5">
+    <link rel="stylesheet" href="projektit.css?v=20260926-6">
   </head>
   <body class="projects-page">
     <header class="site-header">
@@ -73,15 +73,10 @@
               </div>
             </div>
 
-            <div class="project-gallery" aria-label="Tulevat laitekuvat">
+            <div class="project-gallery" aria-label="Tuleva antennikuva">
               <div class="project-image-slot project-image-slot-wide" role="img" aria-label="Paikka tulevalle kuvalle kotona olevasta antennista">
                 <span class="project-image-icon" aria-hidden="true"></span>
                 <strong>Antenni kotona</strong>
-                <span>Kuva lisätään myöhemmin</span>
-              </div>
-              <div class="project-image-slot project-image-slot-wide project-image-slot-compact" role="img" aria-label="Paikka tulevalle Raspberry Pi -kuvalle">
-                <span class="project-image-icon" aria-hidden="true"></span>
-                <strong>Raspberry Pi</strong>
                 <span>Kuva lisätään myöhemmin</span>
               </div>
             </div>
@@ -102,6 +97,13 @@
               <section aria-labelledby="short-data">
                 <h4 id="short-data">Mistä tiedot tulevat?</h4>
                 <p>Antenni ja vastaanotin ovat kotonani. Raspberry Pi lukee niiden avulla lentokoneiden lähettämiä ADS-B-viestejä. Pi kokoaa tämänhetkiset koneet ja paikalliseen tietokantaan tallennetut havainnot. Niistä se laskee esimerkiksi päivän ohitukset ja lähimmän havainnon. Yhteenveto lähetetään pilvipalveluun noin 30 sekunnin välein, ja verkkosivu hakee sieltä uusimmat tiedot.</p>
+                <figure class="project-example project-example-photo">
+                  <a href="images/skyscope-raspberry-pi.jpg" target="_blank" rel="noopener" aria-label="Avaa Raspberry Pi:n ja vastaanottimen kuva suurempana">
+                    <img src="images/skyscope-raspberry-pi.jpg" alt="Oma Raspberry Pi, johon on liitetty RTL-SDR-vastaanotin ja antennin kaapeli." width="3024" height="4032" loading="lazy" decoding="async">
+                    <span>Avaa suurempana ↗</span>
+                  </a>
+                  <figcaption>Tässä ovat Raspberry Pi ja sen USB-portissa oleva vastaanotin. Antennin johto on kiinni vastaanottimessa.</figcaption>
+                </figure>
                 <p>Vastaanottimen tarkkaa sijaintia ei näytetä sivulla eikä lähetetä pilvipalveluun. Pi laskee etäisyydet jo kotona. Siksi sivulla voi näkyä koneen etäisyys ilman, että antennin paikkaa tarvitsee julkaista.</p>
                 <p>Sivusto ei tarvitse suoraa yhteyttä kotiini. Selain kysyy tiedot pilvipalvelusta, jonne Pi on jo lähettänyt ne. Tämä tekee sivusta yksinkertaisen käyttää: avaan vain SkyScopen ja katson tuoreimmat havainnot.</p>
               </section>
@@ -163,6 +165,13 @@
                 <section id="vastaanotto" aria-labelledby="vastaanotto-title">
                   <h4 id="vastaanotto-title">1. Vastaanotto kotona</h4>
                   <p>Monet lentokoneet lähettävät ADS-B-tietoja radiolla. Viesteissä voi olla esimerkiksi koneen tunnus, sijainti, korkeus, nopeus ja lentosuunta. Antenni vastaanottaa signaalin, ja Raspberry Pi:llä toimiva <code>readsb</code> kokoaa kuullut koneet tämänhetkiseen <code>aircraft.json</code>-tiedostoon.</p>
+                  <figure class="project-example project-example-photo">
+                    <a href="images/skyscope-raspberry-pi.jpg" target="_blank" rel="noopener" aria-label="Avaa Raspberry Pi:n ja vastaanottimen kuva suurempana">
+                      <img src="images/skyscope-raspberry-pi.jpg" alt="Raspberry Pi ja sen USB-portissa oleva RTL-SDR-vastaanotin, johon antennin kaapeli on liitetty." width="3024" height="4032" loading="lazy" decoding="async">
+                      <span>Avaa suurempana ↗</span>
+                    </a>
+                    <figcaption>Kuvassa RTL-SDR-vastaanotin on Pi:n USB-portissa ja antennin kaapeli on kiinni vastaanottimessa. Pi:llä toimiva <code>readsb</code> lukee sen kuulemat viestit.</figcaption>
+                  </figure>
                   <p>Kuuluminen riippuu signaalista ja siitä, mitä kone lähettää. Siksi havaintoja ei voi tulkita täydelliseksi luetteloksi alueen lentoliikenteestä. Jos koneelta saadaan tunnus mutta ei käyttökelpoista sijaintia, se voi silti näkyä SkyScopessa kohdassa ”Ilman sijaintia”. Silloin sille ei lasketa etäisyyttä.</p>
                   <p>Jokaisella koneella ei ole sivulla nimeä tai reittiä. Kutsutunnus voi puuttua, ja koneen rekisteri- tai tyyppitiedot riippuvat paikallisen konetietokannan sisällöstä. Jätän puuttuvan tiedon puuttuvaksi sen sijaan, että täyttäisin aukot arvauksilla.</p>
                   <p><code>readsb</code> antaa tämänhetkisen tilanteen. Erillinen paikallinen havaintokanta säilyttää ajallisen historian, jota tarvitsen ohitusten muodostamiseen. Näillä on eri tehtävä: tämänhetkinen tiedosto kertoo, mitä kuulen juuri nyt, ja tietokanta kertoo, mitä olen kuullut aiemmin. Jos vain toinen olisi käytössä, sivulta puuttuisi joko live-tilanne tai päivän historia.</p>
