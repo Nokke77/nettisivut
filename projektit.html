@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#07070b">
     <title>Projektit | Noel Jeromaa</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="projektit.css?v=20260930-1">
+    <link rel="stylesheet" href="projektit.css?v=20260930-2">
   </head>
   <body class="projects-page">
     <header class="site-header">
@@ -30,18 +30,27 @@
         </div>
       </header>
 
+      <!-- Lisää uusi project-browser-item, oma project-card-artikkeli ja siirrä Tulossa-kortti seuraavaan numeroon. -->
       <div class="content project-list">
         <section class="card project-browser" aria-labelledby="project-browser-title">
-          <p class="project-kicker">Projektit järjestyksessä</p>
-          <h2 id="project-browser-title">Kaikki projektit</h2>
-          <p>Lisään tänne seuraavan projektin, kun se on valmis.</p>
-          <ol class="project-browser-track" aria-label="Tulevat projektit">
-            <li class="project-browser-item is-upcoming">
-              <span class="project-browser-number">01</span>
+          <div class="project-browser-heading">
+            <div>
+              <p class="project-kicker">Projektit järjestyksessä</p>
+              <h2 id="project-browser-title">Kaikki projektit</h2>
+            </div>
+            <div class="project-browser-controls" aria-label="Selaa projekteja">
+              <button type="button" data-project-prev aria-label="Edellinen projekti" disabled>←</button>
+              <span data-project-position aria-live="polite">01 / 01</span>
+              <button type="button" data-project-next aria-label="Seuraava projekti" disabled>→</button>
+            </div>
+          </div>
+          <div class="project-browser-track" data-project-track tabindex="0" aria-label="Projektit ja tulevat projektit">
+            <div class="project-browser-item is-upcoming">
+              <span class="project-browser-number">02</span>
               <strong>Seuraava projekti</strong>
               <span>Tulossa</span>
-            </li>
-          </ol>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -52,5 +61,6 @@
         <p>Kaikki oikeudet pidätetään</p>
       </div>
     </footer>
+    <script src="projektit.js?v=20260930-1" defer></script>
   </body>
 </html>
